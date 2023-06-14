@@ -1,0 +1,81 @@
+{% extends 'account/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+    <div class="avatar">
+        <img src="{{ person.avatar.url }}">
+    </div>
+
+    <div class="standard">
+        <h3>{{ person.first_name }} {{ person.last_name }}</h3>
+    </div>
+
+    <div class="followers-following-container">
+
+        <div class="followers">
+
+            <div class="followers-container">
+              {% for follower in followers %}
+                <div class="follower">
+                  <a href="/user-{{ follower.profile_id }}" class="follower-link">
+                    <img src="{{ follower.avatar.url }}" class="follower-avatar">
+                    <span class="follower-name">{{ follower.first_name }}</span></a>
+                </div>
+              {% endfor %}
+
+                <div class="follower-avatar-b">
+                    <button type="submit" name="submit_button" value="">Follower<h1>{{ followers_count }}</h1></button>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="following">
+
+            <div class="followers-container">
+
+                <div class="follower-avatar-b">
+                    <button type="submit" name="submit_button" value="">Follow<h1>{{ following_count }}</h1></button>
+                </div>
+
+              {% for follow in following %}
+                <div class="follower">
+                  <a href="/user-{{ follow.profile_id }}" class="follower-link">
+                    <img src="{{ follow.avatar.url }}" class="follower-avatar">
+                    <span class="follower-name">{{ follow.first_name }}</span></a>
+                </div>
+              {% endfor %}
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="standard">
+        <h3>Добавить пост в ленту:</h3>
+    </div>
+
+    <div class="posts-create">
+
+        <form method="post">
+            {% csrf_token %}
+            {{ posts_form.content }}<br>
+            <button type="submit" name="submit_button" value="create_post">Создать запись</button>
+        </form>
+
+    </div>
+
+    <div class="posts-all">
+
+        {% for post in posts %}
+            <p>{{ post.content }}</p>
+            <h6>{{ post.date }}</h6>
+        {% endfor %}
+
+    </div>
+
+{% endblock %}

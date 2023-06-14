@@ -1,0 +1,419 @@
+@import url('https://fonts.googleapis.com/css?family=Ubuntu+Condensed');
+@import url('https://fonts.cdnfonts.com/css/cinematografica');
+
+
+/* Аватар ------------------------------------------------------------ */
+
+/* Аватар общее */
+.avatar {
+    width: 132px;
+    height: 132px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 50%;
+    border: 2px solid #fff; /* Параметры рамки */
+    outline: solid 2px RGB(30, 30, 30);
+    margin-top: 30px;
+    margin-bottom: 10px;
+}
+
+/* Аватар картинка */
+.avatar img{
+    width: auto;
+    height: 100%;
+    margin: 0 auto;
+}
+
+
+/* Главное Меню ------------------------------------------------------ */
+
+/* Меню общее */
+.menu {
+    padding: 20px; /* Поля вокруг текста */
+    background: RGB(30, 30, 30); /* Цвет фона */
+    text-align: center; /* Положение текста */
+    border-radius: 30px;
+}
+
+/* Меню текст*/
+.menu A {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    text-decoration: none; /* Декорация текста */
+    margin: 0 50px 0 50px; /* Отступы пунктов меню */
+    color: #fff; /* Цвет текста меню */
+    position: relative;
+}
+
+/* User в сети текст*/
+#user {
+    margin-right: 0px; /* Отступ справа */
+    margin-left: -50%; /* Отступ слева (-50% для центрирования основного меню) */
+    right: 10px;
+    color: #fff; /* Цвет текста меню */
+    float: right; /* Абсолютное положение */
+}
+
+/* Точка user текст*/
+.dot-yes {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    text-decoration: none; /* Декорация текста */
+    color: RGB(0, 157, 224); /* Цвет текста меню */
+    position: relative;
+    bottom: 1px;
+}
+
+/* Изменение цвета при наведении курсора мыши в меню */
+.menu A:hover {
+  color: RGB(0, 157, 224);
+}
+
+
+/* Второстепенное меню ----------------------------------------------- */
+
+/* Второстепенное меню общее */
+.menu2 {
+    padding: 20px; /* Поля вокруг текста */
+    background: white; /* Цвет фона */
+    text-align: center; /* Положение текста */
+}
+
+/* Второстепенное меню текст*/
+.menu2 A {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    text-decoration: none; /* Декорация текста */
+    margin: 0 50px 0 50px; /* Отступы пунктов меню */
+    color: RGB(209, 209, 209); /* Цвет текста меню */
+}
+
+/* Изменение цвета при наведении курсора мыши в второстепенном меню */
+.menu2 A:hover {
+    color: RGB(30, 30, 30);
+}
+
+
+/* Форма регистрации и логирования ----------------------------------- */
+
+/* Регистрация и логин общее */
+.registration_login {
+    margin-right: 25%; /* Отступы справа */
+    margin-left: 25%; /* Отступы слева */
+    text-align:center; /* Расположение в блоке - по центру */
+}
+
+/* Регистрация и логин поля ввода */
+.registration_login input{
+    text-align: center; /* Расположение текста в поле ввода - по центру */
+    font-family: 'Ubuntu Condensed', sans-serif; /* Шрифт */
+    width: 250px; /* Ширина */
+    height: 25px; /* Высота */
+    margin-bottom: 5px; /* Отступ с инзу */
+}
+
+/* Регистрация и логин кнопка */
+.registration_login button{
+    text-align: center;
+    font-family: 'Ubuntu Condensed', sans-serif;
+    background: RGB(0, 157, 224);
+    color: white;
+    border-color: RGB(0, 157, 224);
+    border-radius: 3px;
+    border: 0px;
+    width: 258px;
+    height: 33px;
+    margin-bottom: 5px;
+    cursor: pointer; /* Изменить курсор при наведении */
+}
+
+
+/* Стандартные стили ------------------------------------------------- */
+
+/* Стандартные стили общее */
+.standard {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    margin-right: 25%; /* Отступы справа */
+    margin-left: 25%; /* Отступы слева */
+    text-align:center; /* Расположение в блоке - по центру */
+}
+
+/* Стандартные стили кнопка */
+.standard button {
+    text-align: center;
+    font-family: 'Ubuntu Condensed', sans-serif;
+    background: RGB(0, 157, 224);
+    color: white;
+    border-color: RGB(0, 157, 224);
+    border-radius: 3px;
+    border: 0px;
+    width: 258px;
+    height: 33px;
+    margin-bottom: 5px;
+    cursor: pointer; /* Изменить курсор при наведении */
+}
+
+/* H1 */
+.standard H1 {}
+
+/* H3 */
+.standard H3 {}
+
+/* P */
+.standard P {}
+
+/* SPAN */
+.standard SPAN {}
+
+/* A */
+.standard A {
+    color: RGB(0, 157, 224); /* Цвет текста ссылок */
+    text-decoration: none; /* Декорация текста ссылок */
+}
+
+
+/* Вывод ошибок ------------------------------------------------------ */
+
+/* Вывод ошибок общее */
+.error {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    margin-right: 25%; /* Отступы справа */
+    margin-left: 25%; /* Отступы слева */
+    text-align:center; /* Расположение в блоке - по центру */
+    color: red;
+}
+
+/* H1 */
+.standard H1 {}
+
+/* H3 */
+.standard H3 {}
+
+/* P */
+.standard P {}
+
+
+/* Подписчики и подписки --------------------------------------------- */
+
+/* Подписчики и подписки контейнер общее */
+.followers-following-container {
+    flex-wrap: wrap;
+    justify-content: center; /* Расположить элементы в контейнере по центру */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    grid-gap: 10px;
+    margin-right: 0; /* Отступы справа */
+    margin-left: 0; /* Отступы слева */
+}
+
+/* A */
+.followers-following-container A {
+    color: RGB(0, 157, 224); /* Цвет текста ссылок */
+    text-decoration: none; /* Декорация текста ссылок */
+    margin-bottom: 10px; /* Отступы сверху */
+}
+
+/* Подписчики (following) общее */
+.followers {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    margin-right: 0%; /* Отступы справа */
+    margin-left: 10%; /* Отступы слева */
+    text-align: center; /* Расположение в блоке - по центру */
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    position: relative;
+    float: right;
+}
+
+/* Подписки (following) общее */
+.following {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    margin-right: 15%; /* Отступы справа */
+    margin-left: 0%; /* Отступы слева */
+    text-align: center; /* Расположение в блоке - по центру */
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    position: relative;
+    float: right;
+}
+
+
+/* P */
+.followers-following P {
+    margin-top: 10px; /* Отступы сверху */
+    margin-bottom: 2px; /* Отступы сверху */
+}
+
+/* A */
+.followers-following A {
+    color: RGB(0, 157, 224); /* Цвет текста ссылок */
+    text-decoration: none; /* Декорация текста ссылок */
+    /* font-size: 14px; */
+}
+
+/* Подписчики и подписки контейнер */
+.followers-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Расположить элементы в контейнере по центру */
+    background: RGB(248, 248, 248);
+    border-radius: 10px;
+}
+
+/* Подписчики и подписки контейнер содержимое? */
+.follower {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+/* Подписчики и подписки контейнер аватар */
+.follower-avatar {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 50%;
+    border: 2px solid #fff; /* Параметры рамки */
+    outline: solid 2px RGB(30, 30, 30);
+    margin-top: 10px;
+    margin-bottom: 10px;
+    object-fit: cover; /* Сохранить пропорции изображения */
+    display: flex; /* Картинка по центру над текстом */
+}
+
+/* Подписчики и подписки контейнер кнопка */
+.follower-avatar-b button {
+    text-align: center;
+    font-family: 'Ubuntu Condensed', sans-serif;
+    background: RGB(0, 157, 224);
+    color: white;
+    border-color: RGB(0, 157, 224);
+    border-radius: 3px;
+    border: 0px;
+    width: 60px;
+    height: 93px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    cursor: pointer; /* Изменить курсор при наведении */
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+
+/* Подписаться на пользователя --------------------------------------- */
+
+/* Подписаться на пользователя общее */
+.follow-button {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    margin-right: 25%; /* Отступы справа */
+    margin-left: 25%; /* Отступы слева */
+    text-align:center; /* Расположение в блоке - по центру */
+}
+
+/* Подписаться на пользователя кнопка */
+.follow-button button {
+    text-align: center;
+    font-family: 'Ubuntu Condensed', sans-serif;
+    background: RGB(0, 157, 224);
+    color: white;
+    border-color: RGB(0, 157, 224);
+    border-radius: 3px;
+    border: 0px;
+    width: 258px;
+    height: 33px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    cursor: pointer; /* Изменить курсор при наведении */
+}
+
+
+/* Отписаться от пользователя ---------------------------------------- */
+
+/* Отписаться от пользователя общее */
+.unfollow-button {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    margin-right: 25%; /* Отступы справа */
+    margin-left: 25%; /* Отступы слева */
+    text-align:center; /* Расположение в блоке - по центру */
+}
+
+/* Отписаться от пользователя кнопка */
+.unfollow-button button {
+    text-align: center;
+    font-family: 'Ubuntu Condensed', sans-serif;
+    background: red;
+    color: white;
+    border-color: RGB(0, 157, 224);
+    border-radius: 3px;
+    border: 0px;
+    width: 258px;
+    height: 33px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    cursor: pointer; /* Изменить курсор при наведении */
+}
+
+
+/* Создания записи в ленте ------------------------------------------- */
+
+/* Создания записи в ленте общее */
+.posts-create {
+    margin-right: 25%; /* Отступы справа */
+    margin-left: 25%; /* Отступы слева */
+    text-align:center; /* Расположение в блоке - по центру */
+}
+
+/* Создания записи в ленте поля ввода */
+.posts-create input{
+    text-align: center; /* Расположение текста в поле ввода - по центру */
+    font-family: 'Ubuntu Condensed', sans-serif; /* Шрифт */
+    width: 400px; /* Ширина */
+    height: 50px; /* Высота */
+}
+
+/* Создания записи в ленте кнопка */
+.posts-create button{
+    text-align: center;
+    font-family: 'Ubuntu Condensed', sans-serif;
+    background: RGB(0, 157, 224);
+    color: white;
+    border-color: RGB(0, 157, 224);
+    border-radius: 3px;
+    border: 0px;
+    width: 408px;
+    height: 33px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    cursor: pointer; /* Изменить курсор при наведении */
+}
+
+
+/* Вывод записей в ленте --------------------------------------------- */
+
+/* Вывод записей в ленте общее */
+.posts-all {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    margin-right: 35%; /* Отступы справа */
+    margin-left: 35%; /* Отступы слева */
+    text-align:center; /* Расположение в блоке - по центру */
+}
+
+/* P */
+.posts-all P {
+    padding-left: 20px; /* Поля вокруг текста */
+    padding-right: 20px; /* Поля вокруг текста */
+    padding-top: 20px; /* Поля вокруг текста */
+    padding-bottom: 30px; /* Поля вокруг текста */
+    background: RGB(248, 248, 248); /* Цвет фона */
+    border-radius: 10px;
+}
+
+/* H6 */
+.posts-all H6 {
+    margin-top: -35px;
+    color: RGB(150, 150, 150);
+}

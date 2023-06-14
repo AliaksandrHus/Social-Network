@@ -1,0 +1,27 @@
+{% extends 'account/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+    <div class="standard">
+
+        <h3>Социальная сеть</h3>
+        <h3>В нашей сети {{ count_profile }} зарегистрированных пользователей!</h3>
+        <h3>Которые поделились {{ count_posts }} записями!</h3>
+        <p>Присоединяйтесь - мы будем рады)</p>
+
+        <form action="{% url 'login_page' %}">
+            {% csrf_token %}
+        <button value="rand" >Войти</button><br>
+        </form>
+
+        <form action="{% url 'registration_page' %}">
+            {% csrf_token %}
+        <button value="rand" >Регистрация</button>
+        </form>
+
+    </div>
+
+{% endblock %}
