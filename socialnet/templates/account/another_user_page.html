@@ -5,7 +5,7 @@
 
 {% block content %}
 
-    <div class="avatar">
+    <div class="avatar-another-user">
         <img src="{{ person.avatar.url }}">
     </div>
 
@@ -18,16 +18,18 @@
         <div class="followers">
 
             <div class="followers-container">
-              {% for follower in followers %}
-                <div class="follower">
-                  <a href="/user-{{ follower.profile_id }}" class="follower-link">
-                    <img src="{{ follower.avatar.url }}" class="follower-avatar">
+                {% for follower in followers %}
+                    <div class="follower">
+                        <a href="/user-{{ follower.profile_id }}" class="follower-link">
+                        <img src="{{ follower.avatar.url }}" class="follower-avatar">
                     <span class="follower-name">{{ follower.first_name }}</span></a>
                 </div>
-              {% endfor %}
+                {% endfor %}
 
-                <div class="follower-avatar-b">
-                    <button type="submit" name="submit_button" value="">Follower<h1>{{ followers_count }}</h1></button>
+                    <div class="follower-avatar-b">
+                        <form action="/user-{{ person.profile_id }}/followers">
+                        <button>Follower<h1>{{ followers_count }}</h1></button><br>
+                    </form>
                 </div>
 
             </div>
@@ -39,13 +41,15 @@
             <div class="followers-container">
 
                 <div class="follower-avatar-b">
-                    <button type="submit" name="submit_button" value="">Follow<h1>{{ following_count }}</h1></button>
+                    <form action="/user-{{ person.profile_id }}/following">
+                        <button>Follow<h1>{{ following_count }}</h1></button><br>
+                    </form>
                 </div>
 
-              {% for follow in following %}
-                <div class="follower">
-                  <a href="/user-{{ follow.profile_id }}" class="follower-link">
-                    <img src="{{ follow.avatar.url }}" class="follower-avatar">
+                {% for follow in following %}
+                    <div class="follower">
+                        <a href="/user-{{ follow.profile_id }}" class="follower-link">
+                        <img src="{{ follow.avatar.url }}" class="follower-avatar">
                     <span class="follower-name">{{ follow.first_name }}</span></a>
                 </div>
               {% endfor %}
@@ -55,6 +59,41 @@
 
     </div>
 
+    <div class="photo">
+        <div class="photo1">
+
+            {% for photo in temp_left %}
+                <img src="/media/photo/temp-photo.jpg">
+            {% endfor %}
+
+            {% for photo in all_photo_left %}
+                <img src="{{ photo.photo.url }}" >
+            {% endfor %}
+
+        </div>
+
+        <div class="photo-button-another-user">
+
+            <form action="/user-{{ person.profile_id }}/photo">
+                <button>All media:<h1>{{ photo_count }}</h1></button>
+            </form>
+
+
+        </div>
+
+        <div class="photo2">
+
+            {% for photo in all_photo_right %}
+                <img src="{{ photo.photo.url }}" >
+            {% endfor %}
+
+            {% for photo in temp_right %}
+                <img src="/media/photo/temp-photo.jpg">
+            {% endfor %}
+
+        </div>
+
+    </div>
 
         {% if follower %}
 

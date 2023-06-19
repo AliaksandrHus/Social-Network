@@ -3,6 +3,9 @@ from django.db.models.signals import post_save
 from django.db import models
 from django.dispatch import receiver
 
+from multiupload.fields import MultiImageField
+
+
 
 class Profile(models.Model):
 
@@ -68,6 +71,34 @@ class Posts(models.Model):
         verbose_name_plural = 'Посты'
 
 
+class Photo(models.Model):
+
+    """Модель фотоальбома"""
+
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+    photo = models.ImageField(upload_to='photo/')
+
+    # методы
+
+    def __str__(self):
+        return f'{self.author} / {self.date}'
+
+    @property
+    def photo_url(self):
+        """Возвращает ссылку на изображение"""
+        if self.photo and hasattr(self.photo, 'url'): return self.photo.url
+
+    def get_absolute_url(self):
+        """Определение ссылки на объект модели"""
+        return f'/photo/{self.pk}'
+
+    class Meta:
+        """Отображение в админ панели"""
+        verbose_name = 'Фотография'
+        verbose_name_plural = 'Фотографии'
+
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
 
@@ -79,7 +110,4 @@ def create_user_profile(sender, instance, created, **kwargs):
                                first_name=(instance.first_name or 'SUPER'),
                                last_name=(instance.last_name or 'ADMIN'),
                                avatar='avatars/standard-avatar.jpg')
-
-
-
 

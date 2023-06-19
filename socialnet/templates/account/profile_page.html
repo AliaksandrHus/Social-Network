@@ -6,6 +6,10 @@
 {% block content %}
 
     <div class="avatar">
+        <form method="post" enctype="multipart/form-data" id="myForm">
+            {% csrf_token %}
+            <input type="file" name="nev_avatar" onchange="document.getElementById('myForm').submit();">
+        </form>
         <img src="{{ person.avatar.url }}">
     </div>
 
@@ -27,7 +31,11 @@
               {% endfor %}
 
                 <div class="follower-avatar-b">
-                    <button type="submit" name="submit_button" value="">Follower<h1>{{ followers_count }}</h1></button>
+
+                    <form action="profile_page/followers">
+                        <button>Follower<h1>{{ followers_count }}</h1></button><br>
+                    </form>
+
                 </div>
 
             </div>
@@ -39,7 +47,10 @@
             <div class="followers-container">
 
                 <div class="follower-avatar-b">
-                    <button type="submit" name="submit_button" value="">Follow<h1>{{ following_count }}</h1></button>
+
+                    <form action="profile_page/following">
+                        <button>Follow<h1>{{ following_count }}</h1></button><br>
+                    </form>
                 </div>
 
               {% for follow in following %}
@@ -50,6 +61,46 @@
                 </div>
               {% endfor %}
             </div>
+
+        </div>
+
+    </div>
+
+    <div class="photo">
+        <div class="photo1">
+
+            {% for photo in temp_left %}
+                <img src="/media/photo/temp-photo.jpg">
+            {% endfor %}
+
+            {% for photo in all_photo_left %}
+                <a href="/profile_page/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}" ></a>
+            {% endfor %}
+
+        </div>
+
+        <div class="photo-button">
+
+            <form action="profile_page/photo">
+                <button>All media: {{ photo_count }}</button>
+            </form>
+
+        <form method="post" enctype="multipart/form-data" id="nev_photo-myForm">
+            {% csrf_token %}
+            <input type="file" name="nev_photo" onchange="document.getElementById('nev_photo-myForm').submit();" multiple>
+        </form>
+
+        </div>
+
+        <div class="photo2">
+
+            {% for photo in all_photo_right %}
+                <a href="/profile_page/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}" ></a>
+            {% endfor %}
+
+            {% for photo in temp_right %}
+                <img src="/media/photo/temp-photo.jpg">
+            {% endfor %}
 
         </div>
 
