@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 
 from .models import Profile, Posts, Photo
-from .forms import LoginForm, RegistrationForm, PostsForm
+from .forms import LoginForm, RegistrationForm, PostsForm, DescriptionPhotoForm
 
 import random
 import re
@@ -116,6 +116,8 @@ def profile_page(request):
 @login_required(login_url='/')
 def profile_page_followers(request):
 
+    """Страница подписчики активного пользователя"""
+
     if request.method == 'POST':
 
         # кнопка подписаться
@@ -155,6 +157,8 @@ def profile_page_followers(request):
 @login_required(login_url='/')
 def profile_page_following(request):
 
+    """Страница подписки активного пользователя"""
+
     if request.method == 'POST':
 
         # кнопка отменить подписку
@@ -184,6 +188,8 @@ def profile_page_following(request):
 @login_required(login_url='/')
 def profile_page_photo(request):
 
+    """Страница фотоальбом активного пользователя"""
+
     user = f'{request.user.first_name} {request.user.last_name}'
     person = Profile.objects.get(user=request.user.id)
     photo_all = Photo.objects.filter(author__username=request.user.username).order_by('-date')
@@ -203,13 +209,104 @@ def profile_page_photo(request):
 @login_required(login_url='/')
 def profile_page_photo_show(request, pk_photo):
 
+    """Страница просмотра фото активного пользователя"""
+
     user = f'{request.user.first_name} {request.user.last_name}'
+    person = Profile.objects.get(profile_id=request.user.id)
+    photo_all = Photo.objects.filter(author__username=request.user.username).order_by('-date')
     photo_single = Photo.objects.get(id=pk_photo)
+
+    check_like = photo_single.like.filter(username=request.user.username).exists()  # проверка лайка
+    count_like = photo_single.like.count()
+
+    description_form = ''
+
+    # Слайдер на странице фотографий
+
+    center_index = list(photo_all).index(photo_single)
+    len_photo_all = len(photo_all)
+
+    if center_index < 3:
+        photo_line = photo_all[:3] + photo_all[3:7]
+
+    elif center_index > len_photo_all - 4 and len_photo_all >= 7:
+        photo_line = photo_all[len_photo_all - 7:len_photo_all - 3] + photo_all[len_photo_all - 3:]
+
+    else:
+        photo_line = photo_all[center_index - 3: center_index] + photo_all[center_index: center_index + 4]
+
+    # Нажатие на фото для прокрутки на странице фотографий
+
+    if request.method == 'POST':
+
+        # правая часть фото - следующее фото
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'forward':
+
+            if photo_all[len_photo_all - 1].id != photo_single.id:
+
+                next_photo = photo_all[list(photo_all).index(photo_single) + 1].id
+                return redirect('profile_page/photo/show', pk_photo=next_photo)
+
+            else: return redirect('profile_page/photo/show', pk_photo=photo_all[0].id)
+
+        # левая часть фото - предыдущее фото
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'back':
+
+            if photo_all[0].id != photo_single.id:
+
+                next_photo = photo_all[list(photo_all).index(photo_single) - 1].id
+                return redirect('profile_page/photo/show', pk_photo=next_photo)
+
+            else: return redirect('profile_page/photo/show', pk_photo=photo_all[len_photo_all - 1].id)
+
+    # Удалить фотографию
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'delete':
+
+            photo_delete = Photo.objects.get(id=pk_photo)  # Получаем объект модели, который нужно удалить
+            photo_delete.delete()
+
+            if photo_all[0].id != pk_photo:
+                next_photo = photo_all[list(photo_all).index(photo_single) - 1].id
+
+            elif photo_all.count() == 1: return redirect('profile_page/photo')
+
+            else: next_photo = photo_all[1].id
+
+            return redirect('profile_page/photo/show', pk_photo=next_photo)
+
+    # Кнопка добавить описание к фотографии
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'description':
+
+            description_form = DescriptionPhotoForm
+
+    # Кнопка сохранить описание к фотографии
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_description':
+
+            photo_single.description = request.POST['description']
+            photo_single.save()
+
+    # Поставить / отменить лайк
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like':
+            photo_single.set_like(Profile.objects.get(profile_id=request.user.id))
+            return redirect('profile_page/photo/show', pk_photo)
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike':
+            photo_single.set_unlike(Profile.objects.get(profile_id=request.user.id))
+            return redirect('profile_page/photo/show', pk_photo)
 
     data = {
         'user': user,
+        'person': person,
         'title': 'Мои фотографии:',
+        'photo_line': photo_line,
         'photo_single': photo_single,
+        'check_like': check_like,
+        'count_like': count_like,
+        'description_form': description_form,
     }
 
     return render(request, 'account/profile_page_photo_show.html', data)
@@ -226,6 +323,8 @@ def another_user_page(request, pk):
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'follow':
             person = Profile.objects.get(profile_id=request.user.id)
             person.follow(Profile.objects.get(profile_id=pk))
+
+            print('!!!!!!!!')
 
         # кнопка отменить подписку
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'unfollow':
@@ -287,6 +386,8 @@ def another_user_page(request, pk):
 @login_required(login_url='/')
 def another_user_page_followers(request, pk):
 
+    """Страница подписчиков других профилей"""
+
     if request.method == 'POST':
 
         # кнопка подписаться
@@ -329,6 +430,8 @@ def another_user_page_followers(request, pk):
 
 @login_required(login_url='/')
 def another_user_page_following(request, pk):
+
+    """Страница подписок других профилей"""
 
     if request.method == 'POST':
 
@@ -373,8 +476,10 @@ def another_user_page_following(request, pk):
 @login_required(login_url='/')
 def another_user_page_photo(request, pk):
 
+    """Страница фотоальбом других профилей"""
+
     user = f'{request.user.first_name} {request.user.last_name}'
-    person = Profile.objects.get(user=pk)
+    person = get_object_or_404(Profile, user=pk)  # профиль другого user
     photo_all = Photo.objects.filter(author__username=person.user).order_by('-date')
     photo_tot = photo_all.count()
 
@@ -392,13 +497,74 @@ def another_user_page_photo(request, pk):
 @login_required(login_url='/')
 def another_user_page_photo_show(request, pk, pk_photo):
 
+    """Страница просмотра фото других профилей"""
+
     user = f'{request.user.first_name} {request.user.last_name}'
+    person = get_object_or_404(Profile, user=pk)
+    photo_all = Photo.objects.filter(author__username=person.user).order_by('-date')
     photo_single = Photo.objects.get(id=pk_photo)
+
+    check_like = photo_single.like.filter(username=request.user.username).exists()  # проверка лайка
+    count_like = photo_single.like.count()
+
+    # Слайдер на странице фотографий
+
+    center_index = list(photo_all).index(photo_single)
+    len_photo_all = len(photo_all)
+
+    if center_index < 3:
+        photo_line = photo_all[:3] + photo_all[3:7]
+
+    elif center_index > len_photo_all - 4:
+        photo_line = photo_all[len_photo_all - 7:len_photo_all - 3] + photo_all[len_photo_all - 3:]
+
+    else:
+        photo_line = photo_all[center_index - 3: center_index] + photo_all[center_index: center_index + 4]
+
+    # Нажатие на фото для прокрутки на странице фотографий
+
+    if request.method == 'POST':
+
+        # правая часть фото - следующее фото
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'forward':
+
+            if photo_all[len_photo_all - 1].id != photo_single.id:
+
+                next_photo = photo_all[list(photo_all).index(photo_single) + 1].id
+                return redirect('another_user_page/photo/show', pk=pk, pk_photo=next_photo)
+
+            else:
+                return redirect('another_user_page/photo/show', pk=pk, pk_photo=photo_all[0].id)
+
+        # левая часть фото - предыдущее фото
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'back':
+
+            if photo_all[0].id != photo_single.id:
+
+                next_photo = photo_all[list(photo_all).index(photo_single) - 1].id
+                return redirect('another_user_page/photo/show', pk=pk, pk_photo=next_photo)
+
+            else:
+                return redirect('another_user_page/photo/show', pk=pk, pk_photo=photo_all[len_photo_all - 1].id)
+
+    # Поставить / отменить лайк
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like':
+            photo_single.set_like(Profile.objects.get(profile_id=request.user.id))
+            return redirect('another_user_page/photo/show', pk, pk_photo)
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike':
+            photo_single.set_unlike(Profile.objects.get(profile_id=request.user.id))
+            return redirect('another_user_page/photo/show', pk, pk_photo)
 
     data = {
         'user': user,
-        'title': 'Мои фотографии:',
+        'person': person,
+        'title': 'Фотографии:',
+        'photo_line': photo_line,
         'photo_single': photo_single,
+        'check_like': check_like,
+        'count_like': count_like,
     }
 
     return render(request, 'account/another_user_photo_show.html', data)

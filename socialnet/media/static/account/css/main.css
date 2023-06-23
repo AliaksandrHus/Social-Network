@@ -634,6 +634,15 @@ input[type="file"]::before {
     cursor: pointer; /* Изменить курсор при наведении */
 }
 
+/* Создания записи в ленте поле ввода */
+.post-textarea {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    height: 50px;
+    width: 400px;
+    border-color: RGB(230, 230, 230);
+    border-radius: 3px;
+}
+
 
 /* Вывод записей в ленте --------------------------------------------- */
 
@@ -769,7 +778,7 @@ input[type="file"]::before {
 }
 
 /* Страница фото и видео картинка */
-.photo-page img{
+.photo-page img {
     width: 100px;
     height: 100px;
     overflow: hidden;
@@ -790,14 +799,265 @@ input[type="file"]::before {
     margin-right: 25%;
     margin-left: 25%;
     text-align: center; /* Горизонтальное выравнивание */
+    display: flex;
+    position: relative;
+
+    min-width: 50%;
+    justify-content: center;
 }
 
 /* Страница просмотра фото картинка */
 .photo-show img{
     max-width: 100%;
+    min-width: 100%;
     overflow: hidden;
     border-radius: 10px;
     margin-top: 20px;
     object-fit: cover; /* Сохранить пропорции изображения */
     display: inline-block;
+
+}
+
+/* Страница просмотра фото невидимые кнопки на фото */
+.splitter-left,
+.splitter-right {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    position: absolute;
+    width: 50%;
+    border-radius: 10px;
+    border-color: transparent;
+    background-color: transparent;
+    cursor: pointer; /* Изменить курсор при наведении */
+}
+
+/* Страница просмотра фото невидимые кнопки на фото */
+.splitter-left {
+    left: 0;
+    height: calc(100% - 20px);
+}
+
+/* Страница просмотра фото невидимые кнопки на фото */
+.splitter-right {
+    right: 0;
+    height: calc(100% - 20px);
+}
+
+/* Страница просмотра фото кнопка удалить фото */
+.delete-photo {
+    margin-top: 30px;
+    margin-right: 10px;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    border-color: transparent;
+    background-color: red;
+    /*background-color: RGB(0, 157, 224);*/
+    cursor: pointer; /* Изменить курсор при наведении */
+    right: 0;
+    z-index: 9999;
+    justify-content: center;
+    cursor: pointer; /* Изменить курсор при наведении */
+}
+
+/* Страница просмотра фото кнопка удалить фото - крестик*/
+.delete-photo P {
+    color: white;
+    text-align: center;
+    margin-top: 0;
+    margin-left: -3px;
+}
+
+/* Страница просмотра фото кнопка удалить фото */
+.add-description-photo {
+    margin-top: 30px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    border-color: transparent;
+    background-color: RGB(0, 157, 224);
+    cursor: pointer; /* Изменить курсор при наведении */
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    justify-content: center;
+    cursor: pointer; /* Изменить курсор при наведении */
+}
+
+/* Страница просмотра фото кнопка удалить фото - крестик*/
+.add-description-photo P {
+    color: white;
+    text-align: center;
+    margin-top: 0;
+    margin-left: -2px;
+}
+
+
+/* Страница просмотра фото слайдер ----------------------------------- */
+
+/* Страница просмотра фото слайдер контейнер содержимое? */
+.photo-slider {
+    margin-right: 25%;
+    margin-left: 25%;
+    background: RGB(248, 248, 248);
+    margin-top: 20px;
+    border-radius: 10px;
+}
+
+/* Страница просмотра фото слайдер миниатюра */
+.photo-slider img {
+    width: 60px;
+    height: 60px;
+    overflow: hidden;
+    border-radius: 50%;
+    border: 2px solid #fff; /* Параметры рамки */
+    outline: solid 2px RGB(30, 30, 30);
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-right: 10px;
+    margin-left: 10px;
+    object-fit: cover; /* Сохранить пропорции изображения */
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Страница просмотра фото слайдер A */
+.photo-slider A {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    color: RGB(0, 157, 224);
+    display: inline-block;
+    vertical-align: middle; /* Чтобы выровнять текст по вертикали с картинкой */
+    margin-left: 1px;
+    margin-right: 1px;
+    text-decoration: none;
+}
+
+/* Страница просмотра фото слайдер миниатюра */
+.photo-slider-line img {
+    width: 64px;
+    height: 64px;
+    overflow: hidden;
+    border-radius: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-right: 1px;
+    margin-left: 1px;
+    object-fit: cover; /* Сохранить пропорции изображения */
+    display: inline-block;
+    outline: none;
+    border: none;
+}
+
+/* Страница просмотра фото слайдер миниатюра? */
+.photo-slider-line {
+    float: right;
+    margin-right: 8px;
+}
+
+
+/* Страница просмотра фото лайки и дата ------------------------------ */
+
+/* Страница просмотра фото лайки и дата общее */
+.photo-like-date {
+    margin-left: 25%;
+    margin-right: 25%;
+    background: RGB(248, 248, 248);
+    margin-top: 20px;
+    border-radius: 10px;
+
+}
+
+/* Страница просмотра фото лайки и дата кнопки контейнер */
+.unlike-button,
+.like-button {
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Страница просмотра фото лайки и дата кнопки текст */
+.unlike-button P,
+.like-button P {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    float: right;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-right: 10px;
+    font-size: 16px;
+    color: gray;
+}
+
+/* Страница просмотра фото лайки и дата кнопки */
+.unlike-button button,
+.like-button button {
+    margin-top: 7px;
+    margin-left: 10px;
+    float: left;
+    font-family: 'Ubuntu Condensed', sans-serif;
+    border-color: transparent;
+    background-color: transparent;
+    font-size: 16px;
+}
+
+/* Страница просмотра фото лайки и дата убрать лайк */
+.unlike-button button {
+    color: red;
+    cursor: pointer; /* Изменить курсор при наведении */
+
+}
+
+/* Страница просмотра фото лайки и дата поставить лайк */
+.like-button button {
+    color: RGB(0, 157, 224);
+    cursor: pointer; /* Изменить курсор при наведении */
+
+}
+
+
+/* Фото поле ввода описания ------------------------------------------ */
+
+/* Фото поле ввода описания общее */
+.photo-description {
+    margin-left: 25%;
+    margin-right: 25%;
+    margin-bottom: 70px;
+}
+
+/* Фото поле ввода описания поле ввода */
+.description-photo-textarea {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    height: 27px;
+    width: calc(100% - 100px);
+    margin-bottom: 10px;
+    margin-right: 10px;
+    border-color: RGB(230, 230, 230);
+    border-radius: 3px;
+    float: left;
+}
+
+/* Фото поле ввода описания кнопка */
+.photo-description button {
+    text-align: center;
+    font-family: 'Ubuntu Condensed', sans-serif;
+    background: RGB(0, 157, 224);
+    color: white;
+    border-color: RGB(0, 157, 224);
+    border-radius: 3px;
+    border: 0px;
+    width: 80px;
+    height: 33px;
+    margin-bottom: 10px;
+    cursor: pointer; /* Изменить курсор при наведении */
+    float: right;
+}
+
+/* Фото поле ввода описания текст */
+.photo-description-text {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    margin-left: 25%;
+    margin-right: 25%;
+    text-align: center;
 }

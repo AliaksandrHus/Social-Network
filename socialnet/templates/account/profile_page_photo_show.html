@@ -14,9 +14,88 @@
 
 {% block content %}
 
+
+    <div class="photo-slider">
+
+        <a href="/user-{{ person.profile_id }}">
+        <img src="{{ person.avatar.url }}">
+        <span class="follower-name">{{ person.first_name }}</span></a>
+
+        <div class="photo-slider-line">
+            {% for photo in photo_line %}
+                <a href="/profile_page/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
+            {% endfor %}
+        </div>
+
+    </div>
+
     <div class="photo-show">
 
-        <img src="{{ photo_single.photo.url }}" >
+        <img  src="{{ photo_single.photo.url }}">
+
+        <form method="post">
+            {% csrf_token %}
+        <button class="delete-photo" type="submit" name="submit_button" value="delete"><p>✕</p></button>
+        </form>
+
+        <form method="post">
+            {% csrf_token %}
+        <button class="splitter-left" type="submit" name="submit_button" value="back"></button>
+        </form>
+
+        <form method="post">
+            {% csrf_token %}
+        <button class="splitter-right" type="submit" name="submit_button" value="forward"></button>
+        </form>
+
+        <form method="post">
+            {% csrf_token %}
+        <button class="add-description-photo" type="submit" name="submit_button" value="description"><p>+</p></button>
+        </form>
+
+    </div>
+
+    {% if photo_single.description %}
+        <div class="photo-description-text">
+            <p>{{ photo_single.description }}</p>
+        </div>
+    {% endif %}
+
+    {% if description_form %}
+        <div class="photo-description">
+
+            <form method="post">
+                {% csrf_token %}
+                {{ description_form.description }}
+                <button type="submit" name="submit_button" value="create_description">Сохранить</button>
+            </form>
+
+        </div>
+    {% endif %}
+
+    <div class="photo-like-date">
+
+        {% if check_like %}
+
+            <div class="unlike-button">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="set_unlike">❤&nbsp;&nbsp;{{ count_like }}</button>
+                </form>
+                <p>{{ photo_single.date }}</p>
+            </div>
+
+        {% else %}
+
+            <div class="like-button">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="set_like">❤&nbsp;&nbsp;{{ count_like }}</button>
+                </form>
+                <p>{{ photo_single.date }}</p>
+            </div>
+
+        {% endif %}
 
     </div>
 
