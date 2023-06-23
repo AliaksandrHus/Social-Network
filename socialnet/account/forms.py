@@ -25,4 +25,15 @@ class PostsForm(forms.Form):
 
     """Форма создания поста в ленте профиля"""
 
-    content = forms.CharField(label='', widget=forms.TextInput(attrs={'placeholder': 'Введите текст:'}))
+    content = forms.CharField(label='', widget=forms.Textarea(attrs={'placeholder': '',
+                                                                     "rows": 1,
+                                                                     'class': 'post-textarea'}))
+
+
+class DescriptionPhotoForm(forms.Form):
+
+    """Форма создания описания фотографии"""
+
+    description = forms.CharField(label='', widget=forms.Textarea(attrs={'placeholder': '',
+                                                                         "rows": 1,
+                                                                         'class': 'description-photo-textarea'}))

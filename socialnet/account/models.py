@@ -3,9 +3,6 @@ from django.db.models.signals import post_save
 from django.db import models
 from django.dispatch import receiver
 
-from multiupload.fields import MultiImageField
-
-
 
 class Profile(models.Model):
 
@@ -78,6 +75,8 @@ class Photo(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
     photo = models.ImageField(upload_to='photo/')
+    like = models.ManyToManyField(User, related_name='like', blank=True)
+    description = models.TextField(blank=True)
 
     # методы
 
@@ -93,10 +92,38 @@ class Photo(models.Model):
         """Определение ссылки на объект модели"""
         return f'/photo/{self.pk}'
 
+    def set_like(self, profile):
+        """Поставить лайк"""
+        self.like.add(profile.user)
+
+    def set_unlike(self, profile):
+        """Отменить лайк"""
+        self.like.remove(profile.user)
+
     class Meta:
         """Отображение в админ панели"""
         verbose_name = 'Фотография'
         verbose_name_plural = 'Фотографии'
+
+
+class PhotoComment(models.Model):
+
+    """Модель комментариев к фотографии"""
+
+    photo = models.ForeignKey(Photo, on_delete=models.CASCADE)
+    author = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+    comment = models.TextField(blank=True)
+
+    # методы
+
+    def __str__(self):
+        return f'{self.author} / {self.photo}'
+
+    class Meta:
+        """Отображение в админ панели"""
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
 
 
 @receiver(post_save, sender=User)

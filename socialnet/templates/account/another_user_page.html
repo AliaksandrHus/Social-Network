@@ -67,7 +67,7 @@
             {% endfor %}
 
             {% for photo in all_photo_left %}
-                <img src="{{ photo.photo.url }}" >
+            <a href="/user-{{ person.profile_id }}/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
             {% endfor %}
 
         </div>
@@ -84,7 +84,7 @@
         <div class="photo2">
 
             {% for photo in all_photo_right %}
-                <img src="{{ photo.photo.url }}" >
+                <a href="/user-{{ person.profile_id }}/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
             {% endfor %}
 
             {% for photo in temp_right %}
