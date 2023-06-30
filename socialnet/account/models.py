@@ -49,25 +49,6 @@ class Profile(models.Model):
         verbose_name_plural = 'Профили'
 
 
-class Posts(models.Model):
-
-    """Модель записей в ленте"""
-
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    date = models.DateTimeField(auto_now_add=True)
-    content = models.TextField()
-
-    # методы
-
-    def __str__(self):
-        return f'{self.author} / {self.date}'
-
-    class Meta:
-        """Отображение в админ панели"""
-        verbose_name = 'Пост'
-        verbose_name_plural = 'Посты'
-
-
 class Photo(models.Model):
 
     """Модель фотоальбома"""
@@ -124,6 +105,99 @@ class PhotoComment(models.Model):
         """Отображение в админ панели"""
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
+
+
+class Posts(models.Model):
+
+    """Модель записей в ленте"""
+
+    author = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+    content = models.TextField()
+    like_post = models.ManyToManyField(User, related_name='like_post', blank=True)
+    photo_post = models.ManyToManyField(Photo, related_name='photo_post', blank=True)
+
+    # методы
+
+    def __str__(self):
+        return f'{self.author} / {self.date}'
+
+    def set_like_post(self, profile):
+        """Поставить лайк"""
+        self.like_post.add(profile.user)
+
+    def set_unlike_post(self, profile):
+        """Отменить лайк"""
+        self.like_post.remove(profile.user)
+
+    def add_photo_in_post(self, photo):
+        """Добавить фото в пост"""
+        self.photo_post.add(photo.id)
+
+    class Meta:
+        """Отображение в админ панели"""
+        verbose_name = 'Пост'
+        verbose_name_plural = 'Посты'
+
+
+class PostsComment(models.Model):
+
+    """Модель комментариев к фотографии"""
+
+    posts = models.ForeignKey(Posts, on_delete=models.CASCADE)
+    author = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+    comment = models.TextField(blank=True)
+
+    # методы
+
+    def __str__(self):
+        return f'{self.author} / {self.posts}'
+
+    class Meta:
+        """Отображение в админ панели"""
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+
+class RePosts(models.Model):
+
+    """Модель репостов в ленте"""
+
+    author = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    post = models.ForeignKey(Posts, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+    content = models.TextField()
+
+    # методы
+
+    def __str__(self):
+        return f'{self.author} / {self.date}'
+
+    class Meta:
+        """Отображение в админ панели"""
+        verbose_name = 'Репост'
+        verbose_name_plural = 'Репосты'
+
+
+class RePostsComment(models.Model):
+
+    """Модель комментариев к фотографии"""
+
+    reposts = models.ForeignKey(RePosts, on_delete=models.CASCADE)
+    author = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+    comment = models.TextField(blank=True)
+
+    # методы
+
+    def __str__(self):
+        return f'{self.author} / {self.reposts}'
+
+    class Meta:
+        """Отображение в админ панели"""
+        verbose_name = 'Комментарий репоста'
+        verbose_name_plural = 'Комментарии репостов'
 
 
 @receiver(post_save, sender=User)
