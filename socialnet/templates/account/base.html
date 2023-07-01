@@ -23,9 +23,9 @@
       {% if request.user.is_authenticated %}
     <a href="{% url 'profile_page' %}">ПРОФИЛЬ</a>
     <a href="">СООБЩЕНИЯ</a>
-    <a href="">НОВОСТИ</a>
+    <a href="{% url 'news' %}">НОВОСТИ</a>
     <a href="">СООБЩЕСТВА</a>
-    <a href="">ПОИСК</a>
+    <a href="{% url 'search' %}">ПОИСК</a>
     <a id="user" href="{% url 'settings_page' %}"><span class="dot-yes"> ● </span>
         {% if user|length > 1  %}{{ user.upper }}{% else %}SUPER ADMIN{% endif %}</a>
       {% else %}
