@@ -533,9 +533,9 @@ def profile_page_photo_show(request, pk_photo):
             if photo_all[len_photo_all - 1].id != photo_single.id:
 
                 next_photo = photo_all[list(photo_all).index(photo_single) + 1].id
-                return redirect('profile_page/photo/show', pk_photo=next_photo)
+                return redirect('profile_page_photo_show', pk_photo=next_photo)
 
-            else: return redirect('profile_page/photo/show', pk_photo=photo_all[0].id)
+            else: return redirect('profile_page_photo_show', pk_photo=photo_all[0].id)
 
         # левая часть фото - предыдущее фото
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'back':
@@ -543,9 +543,9 @@ def profile_page_photo_show(request, pk_photo):
             if photo_all[0].id != photo_single.id:
 
                 next_photo = photo_all[list(photo_all).index(photo_single) - 1].id
-                return redirect('profile_page/photo/show', pk_photo=next_photo)
+                return redirect('profile_page_photo_show', pk_photo=next_photo)
 
-            else: return redirect('profile_page/photo/show', pk_photo=photo_all[len_photo_all - 1].id)
+            else: return redirect('profile_page_photo_show', pk_photo=photo_all[len_photo_all - 1].id)
 
     # Удалить фотографию
 
@@ -557,11 +557,11 @@ def profile_page_photo_show(request, pk_photo):
             if photo_all[0].id != pk_photo:
                 next_photo = photo_all[list(photo_all).index(photo_single) - 1].id
 
-            elif photo_all.count() == 1: return redirect('profile_page/photo')
+            elif photo_all.count() == 1: return redirect('profile_page_photo')
 
             else: next_photo = photo_all[1].id
 
-            return redirect('profile_page/photo/show', pk_photo=next_photo)
+            return redirect('profile_page_photo_show', pk_photo=next_photo)
 
     # Кнопка добавить описание к фотографии
 
@@ -580,11 +580,11 @@ def profile_page_photo_show(request, pk_photo):
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like':
             photo_single.set_like(Profile.objects.get(profile_id=request.user.id))
-            return redirect('profile_page/photo/show', pk_photo)
+            return redirect('profile_page_photo_show', pk_photo)
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike':
             photo_single.set_unlike(Profile.objects.get(profile_id=request.user.id))
-            return redirect('profile_page/photo/show', pk_photo)
+            return redirect('profile_page_photo_show', pk_photo)
 
     # Добавить комментарий
 
@@ -596,7 +596,7 @@ def profile_page_photo_show(request, pk_photo):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
-            return redirect('profile_page/photo/show', pk_photo)
+            return redirect('profile_page_photo_show', pk_photo)
 
     # Удалить комментарий
 
@@ -606,7 +606,7 @@ def profile_page_photo_show(request, pk_photo):
             comment_delete = PhotoComment.objects.get(id=comment_id)
             comment_delete.delete()
 
-            return redirect('profile_page/photo/show', pk_photo)
+            return redirect('profile_page_photo_show', pk_photo)
 
     data = {
         'user': user,
@@ -1010,6 +1010,8 @@ def another_user_page_photo_show(request, pk, pk_photo):
 
     """Страница просмотра фото других профилей"""
 
+    if pk == request.user.id: return redirect('profile_page_photo_show', pk_photo)
+
     user = f'{request.user.first_name} {request.user.last_name}'
     person = get_object_or_404(Profile, user=pk)
     photo_all = Photo.objects.filter(author__username=person.user).order_by('-date')
@@ -1048,10 +1050,10 @@ def another_user_page_photo_show(request, pk, pk_photo):
             if photo_all[len_photo_all - 1].id != photo_single.id:
 
                 next_photo = photo_all[list(photo_all).index(photo_single) + 1].id
-                return redirect('another_user_page/photo/show', pk=pk, pk_photo=next_photo)
+                return redirect('another_user_page_photo_show', pk=pk, pk_photo=next_photo)
 
             else:
-                return redirect('another_user_page/photo/show', pk=pk, pk_photo=photo_all[0].id)
+                return redirect('another_user_page_photo_show', pk=pk, pk_photo=photo_all[0].id)
 
         # левая часть фото - предыдущее фото
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'back':
@@ -1059,20 +1061,20 @@ def another_user_page_photo_show(request, pk, pk_photo):
             if photo_all[0].id != photo_single.id:
 
                 next_photo = photo_all[list(photo_all).index(photo_single) - 1].id
-                return redirect('another_user_page/photo/show', pk=pk, pk_photo=next_photo)
+                return redirect('another_user_page_photo_show', pk=pk, pk_photo=next_photo)
 
             else:
-                return redirect('another_user_page/photo/show', pk=pk, pk_photo=photo_all[len_photo_all - 1].id)
+                return redirect('another_user_page_photo_show', pk=pk, pk_photo=photo_all[len_photo_all - 1].id)
 
     # Поставить / отменить лайк
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like':
             photo_single.set_like(Profile.objects.get(profile_id=request.user.id))
-            return redirect('another_user_page/photo/show', pk, pk_photo)
+            return redirect('another_user_page_photo_show', pk, pk_photo)
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike':
             photo_single.set_unlike(Profile.objects.get(profile_id=request.user.id))
-            return redirect('another_user_page/photo/show', pk, pk_photo)
+            return redirect('another_user_page_photo_show', pk, pk_photo)
 
     # Добавить комментарий
 
@@ -1084,7 +1086,7 @@ def another_user_page_photo_show(request, pk, pk_photo):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
-            return redirect('another_user_page/photo/show', pk, pk_photo)
+            return redirect('another_user_page_photo_show', pk, pk_photo)
 
     # Удалить комментарий
 
@@ -1094,7 +1096,7 @@ def another_user_page_photo_show(request, pk, pk_photo):
             comment_delete = PhotoComment.objects.get(id=comment_id)
             comment_delete.delete()
 
-            return redirect('another_user_page/photo/show', pk, pk_photo)
+            return redirect('another_user_page_photo_show', pk, pk_photo)
 
     data = {
         'user': user,

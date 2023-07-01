@@ -26,39 +26,36 @@
 
     </div>
 
-        {% for follower in followers %}
-            <div class="follower-list-all">
+     {% for follower in followers %}
 
-                <a href="/user-{{ follower.profile_id }}">
-                <img src="{{ follower.avatar.url }}">
-                <span class="follower-name">{{ follower.first_name }} {{ follower.last_name }}</span></a>
+        <div class="photo-all-comment">
+            <a href="/user-{{ follower.profile_id }}"><img src="{{ follower.avatar.url }}"></a>
+                <div class="photo-comment-user-date">
+                    <a href="/user-{{ follower.profile_id }}">{{ follower.first_name }} {{ follower.last_name }}</a>
+                </div>
+            {% if user_id != follower.user %}
 
-                {% if user_id != follower.user %}
+                {% if follower.user in i_following %}
 
-                    {% if follower.user in i_following %}
+                <form method="post">
+                    {% csrf_token %}
+                    <button class="delete-comment" type="submit" name="submit_button" value="unfollow">✕</button>
+                        <input type="hidden" name="user_id" value="{{ follower.profile_id }}">
+                </form>
 
-                        <div class="follower-list-all-unfollow-button">
-                            <form method="post" >
-                                {% csrf_token %}
-                            <button type="submit" name="submit_button" value="unfollow">Отписаться</button>
-                                <input type="hidden" name="user_id" value="{{ follower.profile_id }}">
-                            </form>
-                        </div>
+                {% else %}
 
-                    {% else %}
+                <form method="post">
+                    {% csrf_token %}
+                    <button class="delete-comment-pluse" type="submit" name="submit_button" value="follow">+</button>
+                        <input type="hidden" name="user_id" value="{{ follower.profile_id }}">
+                </form>
 
-                        <div class="follower-list-all-follow-button">
-                            <form method="post">
-                                {% csrf_token %}
-                            <button type="submit" name="submit_button" value="follow">Подписаться</button>
-                                <input type="hidden" name="user_id" value="{{ follower.profile_id }}">
-                            </form>
-                        </div>
-
-                    {% endif %}
                 {% endif %}
-                <br>
-            </div>
+
+            {% endif %}
+
+        </div>
 
         {% endfor %}
 

@@ -1537,6 +1537,36 @@ input[type="file"]::before {
     color: white;
 }
 
+/* Вывод всех комментариев кнопка удалить комментарий */
+.delete-comment-pluse {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    border-color: transparent;
+    background-color: RGB(220, 220, 220);
+    cursor: pointer; /* Изменить курсор при наведении */
+    z-index: 9999;
+    justify-content: center;
+    cursor: pointer; /* Изменить курсор при наведении */
+    display: flex;
+    color: white;
+}
+
+/* Вывод всех комментариев кнопка удалить комментарий при наведении */
+.delete-comment-pluse:hover {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    border-color: transparent;
+    background-color: RGB(0, 157, 224);
+    cursor: pointer; /* Изменить курсор при наведении */
+    z-index: 9999;
+    justify-content: center;
+    cursor: pointer; /* Изменить курсор при наведении */
+    display: flex;
+    color: white;
+}
+
 /* Вывод всех комментариев форма*/
 .photo-all-comment form {
     position: absolute;
@@ -1544,4 +1574,51 @@ input[type="file"]::before {
     border-left: 2px solid gray;
     padding-left: 10px;
     border-color: white;
+}
+
+
+/* Поле ввода поиска ------------------------------------------------- */
+
+/* Поле ввода поиска общее */
+.search_field {
+    text-align: center;
+    margin-left: 25%;
+    margin-right: 25%;
+    margin-top: 10px;
+}
+
+/* Поле ввода поиска поле ввода */
+.comment-photo-textarea {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    height: 27px;
+    width: calc(100% - 100px);
+    margin-bottom: 10px;
+    margin-right: 10px;
+    border-color: RGB(230, 230, 230);
+    border-radius: 3px;
+    float: left;
+}
+
+/* Поле ввода поиска кнопка */
+.search_field button {
+    text-align: center;
+    font-family: 'Ubuntu Condensed', sans-serif;
+    background: RGB(0, 157, 224);
+    color: white;
+    border-color: RGB(0, 157, 224);
+    border-radius: 3px;
+    border: 0px;
+    width: 80px;
+    height: 33px;
+    margin-bottom: 10px;
+    cursor: pointer; /* Изменить курсор при наведении */
+    float: right;
+}
+
+/* Поле ввода поиска A */
+.search_field A {
+    text-align: center;
+    font-family: 'Ubuntu Condensed', sans-serif;
+    color: RGB(0, 157, 224); /* Цвет текста ссылок */
+    text-decoration: none; /* Декорация текста ссылок */
 }
