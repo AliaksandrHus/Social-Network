@@ -1,28 +1,27 @@
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
 from django.db import models
-from django.dispatch import receiver
 
+from account.models import Profile
 
-class Profile(models.Model):
+class Group(models.Model):
 
-    """Модель профиля User"""
+    """Модель группы"""
 
-    profile_id = models.IntegerField(primary_key=True)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    profile_id = models.IntegerField(primary_key=True, auto_created=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=20)
-    last_name = models.CharField(max_length=20)
-    age = models.IntegerField(default=0)
 
-    followers = models.ManyToManyField(User, related_name='followers', blank=True)
-    following = models.ManyToManyField(User, related_name='following', blank=True)
+    team = models.ManyToManyField(User, related_name='team', blank=True)
+    description = models.CharField(max_length=200, blank=True)
 
-    avatar = models.ImageField(upload_to='avatars/')
+    followers = models.ManyToManyField(User, related_name='group_followers', blank=True)
+
+    avatar = models.ImageField(upload_to='avatars/', default='avatars/standard-avatar.jpg')
 
     # методы
 
     def __str__(self):
-        return f'{self.first_name} {self.last_name}'
+        return f'{self.first_name}'
 
     @property
     def photo_url(self):
@@ -33,30 +32,20 @@ class Profile(models.Model):
         """Определение ссылки на объект модели"""
         return f'/avatars/{self.profile_id}'
 
-    def follow(self, profile):
-        """Подписаться на другой профиль"""
-        self.following.add(profile.user)
-        profile.followers.add(self.user)
-
-    def unfollow(self, profile):
-        """Отписаться от другого профиля"""
-        self.following.remove(profile.user)
-        profile.followers.remove(self.user)
-
     class Meta:
         """Отображение в админ панели"""
         verbose_name = 'Профиль'
         verbose_name_plural = 'Профили'
 
 
-class Photo(models.Model):
+class GroupPhoto(models.Model):
 
-    """Модель фотоальбома"""
+    """Модель фотоальбома группы"""
 
-    author = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    author = models.ForeignKey(Group, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
     photo = models.ImageField(upload_to='photo/')
-    like = models.ManyToManyField(User, related_name='like', blank=True)
+    like = models.ManyToManyField(User, related_name='group_like', blank=True)
     description = models.TextField(blank=True)
 
     # методы
@@ -87,11 +76,11 @@ class Photo(models.Model):
         verbose_name_plural = 'Фотографии'
 
 
-class PhotoComment(models.Model):
+class GroupPhotoComment(models.Model):
 
-    """Модель комментариев к фотографии"""
+    """Модель комментариев к фотографии группы"""
 
-    photo = models.ForeignKey(Photo, on_delete=models.CASCADE)
+    photo = models.ForeignKey(GroupPhoto, on_delete=models.CASCADE)
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
     comment = models.TextField(blank=True)
@@ -107,16 +96,36 @@ class PhotoComment(models.Model):
         verbose_name_plural = 'Комментарии'
 
 
-class Posts(models.Model):
+class GroupPhotoCommentAuthor(models.Model):
 
-    """Модель записей в ленте"""
+    """Модель комментариев к фотографии группы - автор группы"""
 
-    author = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    photo = models.ForeignKey(GroupPhoto, on_delete=models.CASCADE)
+    author = models.ForeignKey(Group, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+    comment = models.TextField(blank=True)
+
+    # методы
+
+    def __str__(self):
+        return f'{self.author} / {self.photo}'
+
+    class Meta:
+        """Отображение в админ панели"""
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+
+class GroupPosts(models.Model):
+
+    """Модель записей в ленте группы"""
+
+    author = models.ForeignKey(Group, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
     content = models.TextField()
-    like_post = models.ManyToManyField(User, related_name='like_post', blank=True)
-    photo_post = models.ManyToManyField(Photo, related_name='photo_post', blank=True)
-    type_object = 'Posts'
+    like_post = models.ManyToManyField(User, related_name='group_like_post', blank=True)
+    photo_post = models.ManyToManyField(GroupPhoto, related_name='group_photo_post', blank=True)
+    type_object = 'GroupPosts'
 
 
     # методы
@@ -142,11 +151,11 @@ class Posts(models.Model):
         verbose_name_plural = 'Посты'
 
 
-class PostsComment(models.Model):
+class GroupPostsComment(models.Model):
 
-    """Модель комментариев к фотографии"""
+    """Модель комментариев к постов группы"""
 
-    posts = models.ForeignKey(Posts, on_delete=models.CASCADE)
+    posts = models.ForeignKey(GroupPosts, on_delete=models.CASCADE)
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
     comment = models.TextField(blank=True)
@@ -162,21 +171,40 @@ class PostsComment(models.Model):
         verbose_name_plural = 'Комментарии'
 
 
-class RePosts(models.Model):
+class GroupPostsCommentAuthor(models.Model):
 
-    """Модель репостов в ленте"""
+    """Модель комментариев к постов группы - автор группы"""
 
-    author = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    post = models.ForeignKey(Posts, on_delete=models.CASCADE)
+    posts = models.ForeignKey(GroupPosts, on_delete=models.CASCADE)
+    author = models.ForeignKey(Group, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
-    content = models.TextField()
-    type_object = 'RePosts'
-
+    comment = models.TextField(blank=True)
 
     # методы
 
     def __str__(self):
-        return f'{self.author} / {self.date}'
+        return f'{self.author} / {self.posts}'
+
+    class Meta:
+        """Отображение в админ панели"""
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+
+class GroupRePosts(models.Model):
+
+    """Модель репостов в ленте группы"""
+
+    author = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    post = models.ForeignKey(GroupPosts, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+    content = models.TextField()
+    type_object = 'GroupRePosts'
+
+    # методы
+
+    def __str__(self):
+        return f'{self.author} / {self.__class__}'
 
     class Meta:
         """Отображение в админ панели"""
@@ -184,11 +212,11 @@ class RePosts(models.Model):
         verbose_name_plural = 'Репосты'
 
 
-class RePostsComment(models.Model):
+class GroupRePostsComment(models.Model):
 
-    """Модель комментариев к фотографии"""
+    """Модель комментариев репостов группы"""
 
-    reposts = models.ForeignKey(RePosts, on_delete=models.CASCADE)
+    reposts = models.ForeignKey(GroupRePosts, on_delete=models.CASCADE)
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
     comment = models.TextField(blank=True)
@@ -202,17 +230,3 @@ class RePostsComment(models.Model):
         """Отображение в админ панели"""
         verbose_name = 'Комментарий репоста'
         verbose_name_plural = 'Комментарии репостов'
-
-
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-
-    """При регистрации автоматически создается Profile"""
-
-    if created:
-        Profile.objects.create(profile_id=instance.id,
-                               user=instance,
-                               first_name=(instance.first_name or 'SUPER'),
-                               last_name=(instance.last_name or 'ADMIN'),
-                               avatar='avatars/standard-avatar.jpg')
-

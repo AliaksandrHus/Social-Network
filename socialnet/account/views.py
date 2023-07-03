@@ -7,7 +7,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 
 from .models import Profile, Posts, Photo, PhotoComment, PostsComment, RePosts, RePostsComment
+
+from groups.models import GroupPosts, GroupRePosts, GroupRePostsComment
 from .forms import LoginForm, RegistrationForm, PostsForm, DescriptionPhotoForm, CommentPhotoForm
+
 
 from itertools import chain
 import random
@@ -63,7 +66,7 @@ def profile_page(request):
                 for send_photo in request.FILES.getlist('photo_post'):
 
                     photo = Photo()
-                    photo.author = request.user
+                    photo.author = Profile.objects.get(profile_id=request.user.id)
                     photo.photo = send_photo
                     photo.save()
                     new_post.add_photo_in_post(photo)
@@ -76,7 +79,7 @@ def profile_page(request):
             for send_photo in request.FILES.getlist('nev_photo'):
 
                 photo = Photo()
-                photo.author = request.user
+                photo.author = Profile.objects.get(profile_id=request.user.id)
                 photo.photo = send_photo
                 photo.save()
 
@@ -96,7 +99,15 @@ def profile_page(request):
             repost_delete = RePosts.objects.get(id=repost_id)
             repost_delete.delete()
 
-    # Кнопка поставить / отменить лайк
+    # Кнопка удалить репост группы
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'reposts-delete-group':
+
+            repost_id = request.POST['post_id']
+            repost_delete = GroupRePosts.objects.get(id=repost_id)
+            repost_delete.delete()
+
+    # Кнопка поставить / отменить лайк посту
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like':
 
@@ -106,6 +117,18 @@ def profile_page(request):
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike':
 
             need_post = Posts.objects.get(id=request.POST['post_id'])
+            need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
+
+    # Поставить / отменить лайк посту группы
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like_group':
+
+            need_post = GroupPosts.objects.get(id=request.POST['post_id'])
+            need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike_group':
+
+            need_post = GroupPosts.objects.get(id=request.POST['post_id'])
             need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
 
     # Кнопка удалить комментарий
@@ -140,6 +163,18 @@ def profile_page(request):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
+    # Добавить комментарий к репосту группы
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment_group_repost':
+
+            need_repost = request.POST['post_id']
+
+            new_comment = GroupRePostsComment()
+            new_comment.reposts = GroupRePosts.objects.get(pk=need_repost)
+            new_comment.author = Profile.objects.get(profile_id=request.user.id)
+            new_comment.comment = request.POST['comment']
+            new_comment.save()
+
     # Кнопка удалить комментарий к репосту
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 're-comment-delete':
@@ -148,12 +183,21 @@ def profile_page(request):
             comment_delete = RePostsComment.objects.get(id=comment_id)
             comment_delete.delete()
 
+    # Кнопка удалить комментарий к репосту группы
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 're-comment-delete-group':
+
+            comment_id = request.POST['comment_id']
+            comment_delete = GroupRePostsComment.objects.get(id=comment_id)
+            comment_delete.delete()
+
     user = f'{request.user.first_name} {request.user.last_name}'
     person = Profile.objects.get(user=request.user.id)
     posts = Posts.objects.filter(author=request.user.id)
     reposts = RePosts.objects.filter(author=request.user.id)
+    reposts_group = GroupRePosts.objects.filter(author=request.user.id)
 
-    post_and_repost = sorted(chain(posts, reposts), key=lambda x: x.date, reverse=True)
+    post_and_repost = sorted(chain(posts, reposts, reposts_group), key=lambda x: x.date, reverse=True)
 
     # Добавить комментарии к постам на странице профиля
 
@@ -164,6 +208,9 @@ def profile_page(request):
 
         elif type(target_post) == RePosts:
             target_post.comments = reversed(RePostsComment.objects.filter(reposts=target_post).order_by('-date')[:3])
+
+        elif type(target_post) == GroupRePosts:
+            target_post.comments = reversed(GroupRePostsComment.objects.filter(reposts=target_post).order_by('-date')[:3])
 
     posts_form = PostsForm
     comment_form = CommentPhotoForm
@@ -180,7 +227,7 @@ def profile_page(request):
     random.shuffle(following)
     following = following[:5]
 
-    all_photo = Photo.objects.filter(author__username=request.user.username).order_by('-date')
+    all_photo = Photo.objects.filter(author__user=request.user).order_by('-date')
 
     photo_count = all_photo.count()
 
@@ -350,6 +397,82 @@ def profile_page_repost(request, pk_repost):
 
 
 @login_required(login_url='/')
+def profile_page_group_repost(request, pk_repost):
+
+    """Просмотр своего репоста"""
+
+    if request.method == 'POST':
+
+    # Удалить пост
+
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'posts-delete':
+
+            post_id = request.POST['post_id']
+            post_delete = RePosts.objects.get(id=post_id)
+            post_delete.delete()
+
+            return redirect('profile_page')
+
+    # Поставить / отменить лайк
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like':
+
+            need_post = GroupPosts.objects.get(id=request.POST['post_id'])
+            need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike':
+
+            need_post = GroupPosts.objects.get(id=request.POST['post_id'])
+            need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
+
+
+    # Добавить комментарий
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment_repost':
+
+            need_repost = request.POST['post_id']
+
+            new_comment = GroupRePostsComment()
+            new_comment.reposts = GroupRePosts.objects.get(pk=need_repost)
+            new_comment.author = Profile.objects.get(profile_id=request.user.id)
+            new_comment.comment = request.POST['comment']
+            new_comment.save()
+
+    # Удалить комментарий
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 're-comment-delete':
+
+            comment_id = request.POST['comment_id']
+            comment_delete = GroupRePostsComment.objects.get(id=comment_id)
+            comment_delete.delete()
+
+    # Кнопка удалить репост
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'reposts-delete':
+
+            repost_id = request.POST['post_id']
+            repost_delete = GroupRePosts.objects.get(id=repost_id)
+            repost_delete.delete()
+
+            return redirect('profile_page')
+
+    user = f'{request.user.first_name} {request.user.last_name}'
+    comment_form = CommentPhotoForm
+    repost = GroupRePosts.objects.get(id=pk_repost)
+    all_comment = GroupRePostsComment.objects.filter(reposts=repost)
+
+    data = {
+        'title': f'Запись# {pk_repost}',
+        'user': user,
+        'post': repost,
+        'comment_form': comment_form,
+        'all_comment': all_comment,
+    }
+
+    return render(request, 'account/profile_page_group_repost.html', data)
+
+
+@login_required(login_url='/')
 def profile_page_post_repost(request, pk_post):
 
     """Страница создания репоста"""
@@ -386,6 +509,51 @@ def profile_page_post_repost(request, pk_post):
 
     data = {
         'title': f'Запись# {pk_post}',
+        'user': user,
+        'post': post,
+        'comment_form': comment_form,
+    }
+
+    return render(request, 'account/profile_page_create_repost.html', data)
+
+
+@login_required(login_url='/')
+def profile_page_post_group_repost(request, pk_group_post):
+
+    """Страница создания репоста"""
+
+    if request.method == 'POST':
+
+    # Кнопка сделать репост
+
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'create_repost':
+
+            repost = GroupRePosts()
+            repost.author = Profile.objects.get(profile_id=request.user.id)
+            repost.post = GroupPosts.objects.get(id=request.POST['post_id'])
+            repost.content = request.POST['comment']
+            repost.save()
+
+            return redirect('profile_page')
+
+    # Поставить / отменить лайк
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like':
+
+            need_post = Posts.objects.get(id=request.POST['post_id'])
+            need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike':
+
+            need_post = Posts.objects.get(id=request.POST['post_id'])
+            need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
+
+    user = f'{request.user.first_name} {request.user.last_name}'
+    comment_form = CommentPhotoForm
+    post = GroupPosts.objects.get(id=pk_group_post)
+
+    data = {
+        'title': f'Запись# {pk_group_post}',
         'user': user,
         'post': post,
         'comment_form': comment_form,
@@ -473,7 +641,7 @@ def profile_page_photo(request):
 
     user = f'{request.user.first_name} {request.user.last_name}'
     person = Profile.objects.get(user=request.user.id)
-    photo_all = Photo.objects.filter(author__username=request.user.username).order_by('-date')
+    photo_all = Photo.objects.filter(author__user=request.user).order_by('-date')
     photo_tot = photo_all.count()
 
     data = {
@@ -494,7 +662,7 @@ def profile_page_photo_show(request, pk_photo):
 
     user = f'{request.user.first_name} {request.user.last_name}'
     person = Profile.objects.get(profile_id=request.user.id)
-    photo_all = Photo.objects.filter(author__username=request.user.username).order_by('-date')
+    photo_all = Photo.objects.filter(author__user=request.user).order_by('-date')
     photo_count = len(photo_all)
     photo_single = Photo.objects.get(id=pk_photo)
 
@@ -668,6 +836,18 @@ def another_user_page(request, pk):
             need_post = Posts.objects.get(id=request.POST['post_id'])
             need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
 
+    # Поставить / отменить лайк посту группы
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like_group':
+
+            need_post = GroupPosts.objects.get(id=request.POST['post_id'])
+            need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike_group':
+
+            need_post = GroupPosts.objects.get(id=request.POST['post_id'])
+            need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
+
     # Кнопка удалить комментарий
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'comment-delete':
@@ -688,12 +868,32 @@ def another_user_page(request, pk):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
+    # Добавить комментарий к репосту группы
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment_group_repost':
+
+            need_repost = request.POST['post_id']
+
+            new_comment = GroupRePostsComment()
+            new_comment.reposts = GroupRePosts.objects.get(pk=need_repost)
+            new_comment.author = Profile.objects.get(profile_id=request.user.id)
+            new_comment.comment = request.POST['comment']
+            new_comment.save()
+
     # Кнопка удалить комментарий к репосту
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 're-comment-delete':
 
             comment_id = request.POST['comment_id']
             comment_delete = RePostsComment.objects.get(id=comment_id)
+            comment_delete.delete()
+
+    # Кнопка удалить комментарий к репосту группы
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 're-comment-delete-group':
+
+            comment_id = request.POST['comment_id']
+            comment_delete = GroupRePostsComment.objects.get(id=comment_id)
             comment_delete.delete()
 
     if request.user.id != pk:
@@ -703,8 +903,9 @@ def another_user_page(request, pk):
 
         posts = Posts.objects.filter(author=pk)
         reposts = RePosts.objects.filter(author=pk)
+        reposts_group = GroupRePosts.objects.filter(author=pk)
 
-        post_and_repost = sorted(chain(posts, reposts), key=lambda x: x.date, reverse=True)
+        post_and_repost = sorted(chain(posts, reposts, reposts_group), key=lambda x: x.date, reverse=True)
 
         # Добавить комментарии к постам на странице профиля
 
@@ -716,6 +917,10 @@ def another_user_page(request, pk):
             elif type(target_post) == RePosts:
                 target_post.comments = reversed(
                     RePostsComment.objects.filter(reposts=target_post).order_by('-date')[:3])
+
+            elif type(target_post) == GroupRePosts:
+                target_post.comments = reversed(
+                    GroupRePostsComment.objects.filter(reposts=target_post).order_by('-date')[:3])
 
         follower = person.followers.filter(username=request.user.username).exists()             # проверка подписки
         followers = Profile.objects.get(user=pk).followers.all()
@@ -729,7 +934,7 @@ def another_user_page(request, pk):
         random.shuffle(following)
         following = following[:5]
 
-        all_photo = Photo.objects.filter(author__username=person.user).order_by('-date')
+        all_photo = Photo.objects.filter(author__user=person.user).order_by('-date')
 
         photo_count = all_photo.count()
 
@@ -895,6 +1100,80 @@ def another_user_page_repost(request, pk, pk_repost):
 
 
 @login_required(login_url='/')
+def another_user_page_group_repost(request, pk, pk_repost):
+
+    """Просмотр своего репоста"""
+
+    if request.method == 'POST':
+
+    # Удалить пост
+
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'posts-delete':
+
+            post_id = request.POST['post_id']
+            post_delete = RePosts.objects.get(id=post_id)
+            post_delete.delete()
+
+            return redirect('profile_page')
+
+    # Поставить / отменить лайк
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like':
+
+            need_post = GroupPosts.objects.get(id=request.POST['post_id'])
+            need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike':
+
+            need_post = GroupPosts.objects.get(id=request.POST['post_id'])
+            need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
+
+    # Добавить комментарий
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment_repost':
+
+            need_repost = request.POST['post_id']
+
+            new_comment = GroupRePostsComment()
+            new_comment.reposts = GroupRePosts.objects.get(pk=need_repost)
+            new_comment.author = Profile.objects.get(profile_id=request.user.id)
+            new_comment.comment = request.POST['comment']
+            new_comment.save()
+
+    # Удалить комментарий
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 're-comment-delete':
+
+            comment_id = request.POST['comment_id']
+            comment_delete = GroupRePostsComment.objects.get(id=comment_id)
+            comment_delete.delete()
+
+    # Кнопка удалить репост
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'reposts-delete':
+
+            repost_id = request.POST['post_id']
+            repost_delete = GroupRePosts.objects.get(id=repost_id)
+            repost_delete.delete()
+
+            return redirect('profile_page')
+
+    user = f'{request.user.first_name} {request.user.last_name}'
+    comment_form = CommentPhotoForm
+    repost = GroupRePosts.objects.get(id=pk_repost)
+    all_comment = GroupRePostsComment.objects.filter(reposts=repost)
+
+    data = {
+        'title': f'Запись# {pk_repost}',
+        'user': user,
+        'post': repost,
+        'comment_form': comment_form,
+        'all_comment': all_comment,
+    }
+
+    return render(request, 'account/another_user_page_group_repost.html', data)
+
+@login_required(login_url='/')
 def another_user_page_followers(request, pk):
 
     """Страница подписчиков других профилей"""
@@ -991,7 +1270,7 @@ def another_user_page_photo(request, pk):
 
     user = f'{request.user.first_name} {request.user.last_name}'
     person = get_object_or_404(Profile, user=pk)  # профиль другого user
-    photo_all = Photo.objects.filter(author__username=person.user).order_by('-date')
+    photo_all = Photo.objects.filter(author__user=person.user).order_by('-date')
     photo_tot = photo_all.count()
 
     data = {
@@ -1014,7 +1293,7 @@ def another_user_page_photo_show(request, pk, pk_photo):
 
     user = f'{request.user.first_name} {request.user.last_name}'
     person = get_object_or_404(Profile, user=pk)
-    photo_all = Photo.objects.filter(author__username=person.user).order_by('-date')
+    photo_all = Photo.objects.filter(author__user=person.user).order_by('-date')
     photo_single = Photo.objects.get(id=pk_photo)
 
     check_like = photo_single.like.filter(username=request.user.username).exists()  # проверка лайка

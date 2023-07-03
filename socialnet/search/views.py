@@ -3,6 +3,7 @@ from django.shortcuts import redirect
 
 from django.contrib.auth.decorators import login_required
 
+from groups.models import Group, GroupPosts, GroupRePosts, GroupPostsComment, GroupRePostsComment, GroupPostsCommentAuthor
 from account.models import Profile, Posts, PostsComment, RePosts, RePostsComment
 from account.forms import CommentPhotoForm
 
@@ -78,6 +79,18 @@ def search_result(request, text_search):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
+    # Добавить комментарий к посту группы
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment_group':
+
+            need_post = request.POST['post_id']
+
+            new_comment = GroupPostsComment()
+            new_comment.posts = GroupPosts.objects.get(pk=need_post)
+            new_comment.author = Profile.objects.get(profile_id=request.user.id)
+            new_comment.comment = request.POST['comment']
+            new_comment.save()
+
     # Кнопка поставить / отменить лайк
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like':
@@ -90,12 +103,40 @@ def search_result(request, text_search):
             need_post = Posts.objects.get(id=request.POST['post_id'])
             need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
 
+    # Кнопка поставить / отменить лайк / пост группы
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like_group':
+
+            need_post = GroupPosts.objects.get(id=request.POST['post_id'])
+            need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike_group':
+
+            need_post = GroupPosts.objects.get(id=request.POST['post_id'])
+            need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
+
     # Кнопка удалить комментарий
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'comment-delete':
 
             comment_id = request.POST['comment_id']
             comment_delete = PostsComment.objects.get(id=comment_id)
+            comment_delete.delete()
+
+    # Кнопка удалить комментарий группы
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'comment-delete-group':
+
+            comment_id = request.POST['comment_id']
+            comment_delete = GroupPostsComment.objects.get(id=comment_id)
+            comment_delete.delete()
+
+    # Кнопка удалить комментарий к репосту группы
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 're-comment-delete-group':
+
+            comment_id = request.POST['comment_id']
+            comment_delete = GroupRePostsComment.objects.get(id=comment_id)
             comment_delete.delete()
 
     # Добавить комментарий к репосту
@@ -117,6 +158,18 @@ def search_result(request, text_search):
             comment_id = request.POST['comment_id']
             comment_delete = RePostsComment.objects.get(id=comment_id)
             comment_delete.delete()
+
+    # Добавить комментарий к репосту группы
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment_group_repost':
+
+            need_repost = request.POST['post_id']
+
+            new_comment = GroupRePostsComment()
+            new_comment.reposts = GroupRePosts.objects.get(pk=need_repost)
+            new_comment.author = Profile.objects.get(profile_id=request.user.id)
+            new_comment.comment = request.POST['comment']
+            new_comment.save()
 
     user = f'{request.user.first_name} {request.user.last_name}'
     i_following = Profile.objects.get(user=request.user.id).following.all()
@@ -159,9 +212,12 @@ def search_result(request, text_search):
 
     posts = Posts.objects.filter(content__iregex=text_search)
     reposts = RePosts.objects.filter(content__iregex=text_search)
-    post_and_repost += sorted(chain(posts, reposts), key=lambda x: x.date, reverse=True)
 
-    post_and_repost = [post for post in post_and_repost if post.author.profile_id != request.user.id]
+    group_posts = GroupPosts.objects.filter(content__iregex=text_search)
+    group_reposts = GroupRePosts.objects.filter(content__iregex=text_search)
+
+    post_and_repost += sorted(chain(posts, reposts, group_posts, group_reposts), key=lambda x: x.date, reverse=True)
+    post_and_repost = [post for post in post_and_repost if post.author.user != request.user]
 
     # Добавить 3 последних комментария к постам и репостам
 
@@ -174,12 +230,32 @@ def search_result(request, text_search):
             target_post.comments = reversed(
                 RePostsComment.objects.filter(reposts=target_post).order_by('-date')[:3])
 
+        elif type(target_post) == GroupPosts:
+            comments_user = GroupPostsComment.objects.filter(posts=target_post)
+            comments_author = GroupPostsCommentAuthor.objects.filter(posts=target_post)
+            target_post.comments = list(sorted(chain(comments_user, comments_author), key=lambda x: x.date))[-3:]
+
+        elif type(target_post) == GroupRePosts:
+            target_post.comments = reversed(
+                GroupRePostsComment.objects.filter(reposts=target_post).order_by('-date')[:3])
+
+    group = []
+    group = Group.objects.filter(first_name__iregex=text_search)
+
+    search_group_count = len(group)
+    search_group_all = '' if search_group_count <= 5 else search_group_count - 5
+
+    group = group[:5]
+
+
     data = {
         'user': user,
         'title': 'Результат поиска',
         'text_search': text_search,
         'i_following': i_following,
         'comment_form': comment_form,
+        'group': group,
+        'search_group_all': search_group_all,
         'search_people': search_people,
         'search_people_all': search_people_all,
         'post_and_repost': post_and_repost,
@@ -248,6 +324,37 @@ def search_result_people(request, text_search):
         'i_following': i_following,
         'comment_form': comment_form,
         'search_people': search_people,
+    }
+
+    return render(request, 'search/search_result.html', data)
+
+
+def search_result_group(request, text_search):
+
+    """Страница результат поиска групп"""
+
+    if request.method == 'POST':
+
+    # Кнопка найти
+
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'start_search':
+
+            search_text = request.POST['comment']
+            return redirect('search_result', search_text)
+
+    user = f'{request.user.first_name} {request.user.last_name}'
+    comment_form = CommentPhotoForm
+
+    group = []
+    group = Group.objects.filter(first_name__iregex=text_search)
+
+    print(group, '------')
+
+    data = {
+        'user': user,
+        'title': 'Результат поиска',
+        'comment_form': comment_form,
+        'group': group,
     }
 
     return render(request, 'search/search_result.html', data)
