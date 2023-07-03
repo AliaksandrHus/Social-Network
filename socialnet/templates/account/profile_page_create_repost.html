@@ -25,6 +25,18 @@
 
         <div class="posts-all">
 
+            {% if post.type_object == GroupRePosts %}
+
+            <div class="posts-all-container">
+                    <a href="/groups/group-{{ post.author.profile_id }}"><img src="{{ post.author.avatar.url }}"></a>
+                <div class="posts-comment-user-date">
+                    <a href="/groups/group-{{ post.author.profile_id }}">{{ post.author }}</a>
+                    <span class="posts-comment-date">{{ post.date }}</span>
+                </div>
+            </div>
+
+            {% else %}
+
             <div class="posts-all-container">
                     <a href="/user-{{ post.author.profile_id }}"><img src="{{ post.author.avatar.url }}"></a>
                 <div class="posts-comment-user-date">
@@ -32,6 +44,8 @@
                     <span class="posts-comment-date">{{ post.date }}</span>
                 </div>
             </div>
+
+            {% endif %}
 
             {% if post.photo_post.all|length == 1 %}
                 <div class="posts-all-1">

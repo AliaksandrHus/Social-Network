@@ -295,6 +295,18 @@ input[type="file"]::before {
     float: right;
 }
 
+/* Подписчики (following) общее */
+.followers-group {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    text-align: center; /* Расположение в блоке - по центру */
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: relative;
+    float: right;
+}
+
 /* Подписки (following) общее */
 .following {
     font-family: 'Ubuntu Condensed', sans-serif;
@@ -350,6 +362,18 @@ input[type="file"]::before {
     border-radius: 50%;
     border: 2px solid #fff; /* Параметры рамки */
     outline: solid 2px RGB(30, 30, 30);
+    margin-top: 10px;
+    margin-bottom: 10px;
+    object-fit: cover; /* Сохранить пропорции изображения */
+    display: flex; /* Картинка по центру над текстом */
+}
+
+/* Подписчики и подписки контейнер аватар */
+.follower-avatar-temp {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto;
+    overflow: hidden;
     margin-top: 10px;
     margin-bottom: 10px;
     object-fit: cover; /* Сохранить пропорции изображения */
@@ -782,6 +806,17 @@ input[type="file"]::before {
 }
 
 /* Вывод записей в ленте кнопка удалить комментарий */
+.delete-post-b-group {
+    position: absolute;
+    display: flex;
+    left: calc(75% - 35px);
+    margin-top: 16px;
+    margin-left: -30px;
+
+}
+
+
+/* Вывод записей в ленте кнопка удалить комментарий */
 .delete-post {
     width: 20px;
     height: 20px;
@@ -817,6 +852,15 @@ input[type="file"]::before {
     display: flex;
     left: calc(75% - 35px);
     margin-top: -30px;
+    margin-left: -3px;
+}
+
+/* Вывод записей в ленте кнопка удалить комментарий */
+.view-post-b-group {
+    position: absolute;
+    display: flex;
+    left: calc(75% - 35px);
+    margin-top: -37px;
     margin-left: -3px;
 }
 
@@ -1476,9 +1520,9 @@ input[type="file"]::before {
 /* Вывод всех комментариев имя и дата */
 .photo-comment-user-date {
     border-radius: 10px;
-    min-width: 100px;
     display: flex;
     flex-direction: column;
+    margin-right: 10px;
 }
 
 /* Вывод всех комментариев имя и дата */
