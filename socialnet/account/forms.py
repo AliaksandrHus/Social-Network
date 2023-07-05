@@ -26,9 +26,9 @@ class PostsForm(forms.Form):
     """Форма создания поста в ленте профиля"""
     # photos = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
     # photos = forms.MultipleChoiceField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
-    content = forms.CharField(label='', widget=forms.Textarea(attrs={'placeholder': '',
+    content = forms.CharField(required=False, label='', widget=forms.Textarea(attrs={'placeholder': '',
                                                                      'rows': 1,
-                                                                     'class': 'post-textarea'}))
+                                                                     'class': 'post-create-textarea'}))
 
 
 class DescriptionPhotoForm(forms.Form):

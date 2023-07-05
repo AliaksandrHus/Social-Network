@@ -12,7 +12,10 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
+
     age = models.IntegerField(default=0)
+    user_status = models.TextField(blank=True)
+    user_admin = models.BooleanField(default=False)
 
     followers = models.ManyToManyField(User, related_name='followers', blank=True)
     following = models.ManyToManyField(User, related_name='following', blank=True)
@@ -210,9 +213,15 @@ def create_user_profile(sender, instance, created, **kwargs):
     """При регистрации автоматически создается Profile"""
 
     if created:
+
         Profile.objects.create(profile_id=instance.id,
                                user=instance,
                                first_name=(instance.first_name or 'SUPER'),
                                last_name=(instance.last_name or 'ADMIN'),
                                avatar='avatars/standard-avatar.jpg')
 
+        if User.objects.all().count() == 1:
+
+            first_user = Profile.objects.get(profile_id=1)
+            first_user.user_admin = True
+            first_user.save()

@@ -3,7 +3,10 @@ from django.shortcuts import redirect
 
 from django.contrib.auth.decorators import login_required
 
+from usermessages.models import Dialog
+
 from groups.models import Group, GroupPosts, GroupRePosts, GroupPostsComment, GroupRePostsComment, GroupPostsCommentAuthor
+
 from account.models import Profile, Posts, PostsComment, RePosts, RePostsComment
 from account.forms import CommentPhotoForm
 
@@ -27,7 +30,11 @@ def search(request):
             search_text = request.POST['comment']
             return redirect('search_result', search_text)
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'title': 'Поиск',
         'comment_form': comment_form,
@@ -248,7 +255,11 @@ def search_result(request, text_search):
     group = group[:5]
 
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'title': 'Результат поиска',
         'text_search': text_search,
@@ -318,7 +329,11 @@ def search_result_people(request, text_search):
         search_people += Profile.objects.filter(first_name__iregex=text_search_list[1], last_name__iregex=text_search_list[0])
         search_people = [person for person in set(search_people) if person.profile_id != request.user.id]
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'title': 'Результат поиска',
         'i_following': i_following,
@@ -348,9 +363,11 @@ def search_result_group(request, text_search):
     group = []
     group = Group.objects.filter(first_name__iregex=text_search)
 
-    print(group, '------')
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
 
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'title': 'Результат поиска',
         'comment_form': comment_form,

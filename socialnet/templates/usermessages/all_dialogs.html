@@ -1,0 +1,43 @@
+{% extends 'account/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+    <div class="standard">
+
+        <h3>Мои сообщения</h3>
+        {{ dialog.last_message }}
+
+    </div>
+
+    {% for dialog in all_dialogs %}
+
+        <div class="photo-all-comment">
+            <a href="/user-{{ dialog.another_user.profile_id }}"><img src="{{ dialog.another_user.avatar.url }}"></a>
+                <div class="photo-comment-user-date">
+                    <a href="/user-{{ dialog.another_user.profile_id }}">
+                        {{ dialog.another_user.first_name }} {{ dialog.another_user.last_name }}</a>
+                    <span class="photo-comment-date">{{ dialog.last_message_time }}</span>
+                </div>
+            <a href="/messages/dialog-{{ dialog.id }}">
+
+                {% if dialog.last_message.read %}
+                    <p>{{ dialog.last_message_text }}</p>
+                {% else %}
+                    <p id="message-not-read">{{ dialog.last_message_text }}</p>
+                {% endif %}</a>
+
+        </div>
+
+            <div class="view-post-b-group">
+                <form action="/messages/dialog-{{ dialog.id }}">
+                    <button class="view-post"><p>➤</p></button>
+                </form>
+            </div>
+
+    {% endfor %}
+
+
+{% endblock %}

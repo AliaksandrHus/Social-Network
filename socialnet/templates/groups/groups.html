@@ -5,9 +5,13 @@
 
 {% block content %}
 
-        <div class="standard">
-            <h3>Я подписан на сообщества</h3>
-        </div>
+        {% if fallowing_group %}
+
+            <div class="standard">
+                <h3>Я подписан на сообщества</h3>
+            </div>
+
+        {% endif %}
 
         {% for group in fallowing_group %}
 

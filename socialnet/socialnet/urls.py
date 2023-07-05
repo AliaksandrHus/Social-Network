@@ -8,7 +8,7 @@ urlpatterns = [
     path('news/', include('news.urls')),
     path('search/', include('search.urls')),
     path('groups/', include('groups.urls')),
+    path('messages/', include('usermessages.urls')),
 
-    # path('messages/', include('usermessages.urls')),
     # path('admin/', include('useradmin.urls')),
 ]

@@ -1,0 +1,76 @@
+{% extends 'account/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+<form method="post">
+    {% csrf_token %}
+    <button id="submitBtn" name="submit_button" value="add_message_list" style="display:none;"></button>
+        <input type="hidden" name="slice" value="{{ start_slice }}">
+
+</form>
+
+<script src="media/static/account/js/account.js"></script>
+
+    <div class="standard">
+        <h3>Диалог:</h3>
+    </div>
+
+
+    {% for message in messages %}
+
+    <div class="message-all-comment">
+        <a href="/user-{{ message.author.profile_id }}">
+                <img src="{{ message.author.avatar.url }}"></a>
+            <div class="message-comment-user-date">
+                <a href="/user-{{ message.author.profile_id }}">{{ message.author.first_name }}</a>
+                <span class="message-comment-date">{{ message.date }}</span>
+            </div>
+
+            {% if message.read %}
+                <p>{{ message.content }}</p>
+            {% else %}
+                <p id="message-not-read">{{ message.content }}</p>
+            {% endif %}
+
+        {% if message.author.user == request.user %}
+
+            <form method="post">
+                {% csrf_token %}
+                <button class="message-delete-comment" type="submit" name="submit_button" value="message-delete">✕</button>
+                <input type="hidden" name="message_id" value="{{ message.id }}">
+            </form>
+
+        {% endif %}
+
+    </div>
+
+            {% for photo in message.photo_post.all %}
+            <div class="message-photo">
+                <div class="message-photo-1">
+                    <img src="{{ photo.photo.url }}">
+                </div>
+            </div>
+            {% endfor %}
+
+    {% endfor %}
+
+
+    <div class="posts-create">
+
+        <div class="post-button">
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ posts_form.content }}
+            <button id="summbit-button" type="submit" name="submit_button" value="create_message">Создать запись</button>
+            <input type="file" name="photo_post" multiple>
+        </form>
+
+        </div>
+    </div>
+
+
+{% endblock %}

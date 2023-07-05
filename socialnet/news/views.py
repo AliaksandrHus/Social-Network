@@ -1,8 +1,11 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
-from account.models import Profile, Posts, PostsComment, RePosts, RePostsComment
+from usermessages.models import Dialog
+
 from groups.models import GroupPosts, GroupRePosts, GroupPostsComment, GroupPostsCommentAuthor, GroupRePostsComment
+
+from account.models import Profile, Posts, PostsComment, RePosts, RePostsComment
 from account.forms import CommentPhotoForm
 
 from itertools import chain
@@ -160,7 +163,11 @@ def news(request):
             target_post.comments = reversed(
                 GroupRePostsComment.objects.filter(reposts=target_post).order_by('-date')[:3])
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'title': 'Новости',
         'user': user,
         'post_and_repost': post_and_repost,

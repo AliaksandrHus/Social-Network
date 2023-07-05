@@ -10,3 +10,17 @@ window.onbeforeunload = function(e) {
 
 
 
+
+window.addEventListener('load', function() {
+    const submitBtn = document.querySelector('#submitBtn');
+
+    if (submitBtn) { // проверяем, существует ли элемент на странице
+        window.addEventListener('scroll', function() {
+            if (window.scrollY === 0) { // используем window.scrollY вместо window.pageYOffset
+                submitBtn.click();
+            }
+        });
+    }
+});
+
+
