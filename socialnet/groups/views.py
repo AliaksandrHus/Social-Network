@@ -5,6 +5,8 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 
+from usermessages.models import Dialog
+
 from account.models import Profile
 from account.forms import PostsForm, DescriptionPhotoForm, CommentPhotoForm
 
@@ -39,7 +41,11 @@ def groups(request):
     fallowing_group = Group.objects.filter(followers=request.user)
     admin_group = Group.objects.filter(team=request.user)
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'title': 'Группы',
         'comment_form': comment_form,
@@ -223,7 +229,11 @@ def group_view(request, group_id):
         followers_left = followers[:5]
         followers_right = followers[-5:]
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'title': f'{group.first_name}',
         'group': group,
@@ -278,7 +288,11 @@ def group_followers(request, group_id):
 
     i_following = Profile.objects.get(user=request.user.id).following.all()
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'user_id': user_id,
         'group': group,
@@ -385,8 +399,15 @@ def group_team(request, group_id):
 
     comment_form = CommentPhotoForm
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
 
     data = {
+        'not_read_message': not_read_message,
+        'not_read_message': not_read_message,
         'user': user,
         'user_id': user_id,
         'group': group,
@@ -422,7 +443,11 @@ def groups_photo(request, group_id):
     photo_all = GroupPhoto.objects.filter(author=group).order_by('-date')
     photo_tot = photo_all.count()
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'group': group,
         'title': 'Фотографии:',
@@ -571,7 +596,11 @@ def groups_photo_show(request, group_id, pk_photo):
 
     all_comment = list(sorted(chain(comments_user, comments_author), key=lambda x: x.date))
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'group': group,
         'title': 'Фотографии сообщества:',
@@ -662,7 +691,11 @@ def groups_post(request, group_id, pk_post):
     comments_author = GroupPostsCommentAuthor.objects.filter(posts=post)
     all_comment = list(sorted(chain(comments_user, comments_author), key=lambda x: x.date))
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'title': f'Пост {pk_post}',
         'group': group,

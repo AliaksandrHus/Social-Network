@@ -40,7 +40,13 @@
                 <div class="follower">
                     <a href="/user-{{ follower.profile_id }}" class="follower-link">
                     <img src="{{ follower.avatar.url }}" class="follower-avatar">
-                    <span class="follower-name">{{ follower.first_name }}</span></a>
+
+                    {% if follower.first_name|length < 12 %}
+                        <span class="follower-name">{{ follower.first_name }}</span></a>
+                    {% else %}
+                        <span class="follower-name">{{ follower.first_name|slice:":8" }}..</span></a>
+                    {% endif %}
+
                 </div>
             {% endfor %}
 
@@ -57,7 +63,13 @@
                 <div class="follower">
                     <a href="/user-{{ follower.profile_id }}" class="follower-link">
                     <img src="{{ follower.avatar.url }}" class="follower-avatar">
-                    <span class="follower-name">{{ follower.first_name }}</span></a>
+
+                    {% if follower.first_name|length < 12 %}
+                        <span class="follower-name">{{ follower.first_name }}</span></a>
+                    {% else %}
+                        <span class="follower-name">{{ follower.first_name|slice:":8" }}..</span></a>
+                    {% endif %}
+
                 </div>
                 {% else %}
                 <div class="follower">
@@ -186,13 +198,16 @@
 
         <div class="posts-create">
 
+            <div class="post-button">
+
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                {{ posts_form.content }}<br>
+                {{ posts_form.content }}
+                <button id="summbit-button" type="submit" name="submit_button" value="create_post">Создать запись</button>
                 <input type="file" name="photo_post" multiple>
-                <button type="submit" name="submit_button" value="create_post">Создать запись</button>
             </form>
 
+            </div>
         </div>
 
     {% else %}

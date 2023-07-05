@@ -22,13 +22,19 @@
         <div class="followers">
 
             <div class="followers-container">
-              {% for follower in followers %}
-                <div class="follower">
-                  <a href="/user-{{ follower.profile_id }}" class="follower-link">
-                    <img src="{{ follower.avatar.url }}" class="follower-avatar">
-                    <span class="follower-name">{{ follower.first_name }}</span></a>
-                </div>
-              {% endfor %}
+                {% for follower in followers %}
+                    <div class="follower">
+                        <a href="/user-{{ follower.profile_id }}" class="follower-link">
+                        <img src="{{ follower.avatar.url }}" class="follower-avatar">
+
+                    {% if follower.first_name|length < 12 %}
+                        <span class="follower-name">{{ follower.first_name }}</span></a>
+                    {% else %}
+                        <span class="follower-name">{{ follower.first_name|slice:":8" }}..</span></a>
+                    {% endif %}
+
+                    </div>
+                {% endfor %}
 
                 <div class="follower-avatar-b">
 
@@ -53,13 +59,19 @@
                     </form>
                 </div>
 
-              {% for follow in following %}
-                <div class="follower">
-                  <a href="/user-{{ follow.profile_id }}" class="follower-link">
-                    <img src="{{ follow.avatar.url }}" class="follower-avatar">
-                    <span class="follower-name">{{ follow.first_name }}</span></a>
-                </div>
-              {% endfor %}
+                {% for follow in following %}
+                    <div class="follower">
+                        <a href="/user-{{ follow.profile_id }}" class="follower-link">
+                        <img src="{{ follow.avatar.url }}" class="follower-avatar">
+
+                    {% if follow.first_name|length < 12 %}
+                        <span class="follower-name">{{ follow.first_name }}</span></a>
+                    {% else %}
+                        <span class="follower-name">{{ follow.first_name|slice:":8" }}..</span></a>
+                    {% endif %}
+
+                    </div>
+                {% endfor %}
             </div>
 
         </div>
@@ -112,13 +124,16 @@
 
     <div class="posts-create">
 
+        <div class="post-button">
+
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            {{ posts_form.content }}<br>
+            {{ posts_form.content }}
+            <button id="summbit-button" type="submit" name="submit_button" value="create_post">Создать запись</button>
             <input type="file" name="photo_post" multiple>
-            <button type="submit" name="submit_button" value="create_post">Создать запись</button>
         </form>
 
+        </div>
     </div>
 
         {% for post in post_and_repost %}
@@ -329,14 +344,6 @@
 
 
 
-
-
-
-
-
-
-
-
             {% elif post.type_object == 'RePosts' %}
 
 
@@ -538,38 +545,6 @@
                 </div>
 
                 <br>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

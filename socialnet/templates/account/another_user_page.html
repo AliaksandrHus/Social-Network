@@ -12,6 +12,45 @@
     <div class="standard">
         <h3>{{ person.first_name }} {{ person.last_name }}</h3>
     </div>
+<!--
+    <div class="add_message_info">
+
+                {% if follower %}
+
+            <div class="unfollow-btn">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="unfollow">-</button>
+                </form>
+            </div>
+
+        {% else %}
+
+            <div class="follow-btn">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="follow">+</button>
+                </form>
+            </div>
+
+        {% endif %}
+
+
+            <div class="message-btn">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="send_message">Написать</button>
+                </form>
+            </div>
+
+            <div class="info-btn">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="send_message">i</button>
+                </form>
+            </div>
+    </div>
+-->
 
      <div class="followers-following-container">
 
@@ -22,7 +61,13 @@
                     <div class="follower">
                         <a href="/user-{{ follower.profile_id }}" class="follower-link">
                         <img src="{{ follower.avatar.url }}" class="follower-avatar">
-                    <span class="follower-name">{{ follower.first_name }}</span></a>
+
+                    {% if follower.first_name|length < 12 %}
+                        <span class="follower-name">{{ follower.first_name }}</span></a>
+                    {% else %}
+                        <span class="follower-name">{{ follower.first_name|slice:":8" }}..</span></a>
+                    {% endif %}
+
                 </div>
                 {% endfor %}
 
@@ -46,12 +91,18 @@
                     </form>
                 </div>
 
-                {% for follow in following %}
+                    {% for follow in following %}
                     <div class="follower">
                         <a href="/user-{{ follow.profile_id }}" class="follower-link">
                         <img src="{{ follow.avatar.url }}" class="follower-avatar">
-                    <span class="follower-name">{{ follow.first_name }}</span></a>
-                </div>
+
+                    {% if follow.first_name|length < 12 %}
+                        <span class="follower-name">{{ follow.first_name }}</span></a>
+                    {% else %}
+                        <span class="follower-name">{{ follow.first_name|slice:":8" }}..</span></a>
+                    {% endif %}
+
+                    </div>
               {% endfor %}
             </div>
 
@@ -95,25 +146,80 @@
 
     </div>
 
-        {% if follower %}
 
-    <div class="unfollow-button">
-        <form method="post">
-            {% csrf_token %}
-        <button type="submit" name="submit_button" value="unfollow">Отменить подписку</button>
-        </form>
-    </div>
+
+
+
+    <div class="add_message_info">
+
+                {% if follower %}
+
+            <div class="unfollow-btn">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="unfollow">-</button>
+                </form>
+            </div>
 
         {% else %}
 
-    <div class="follow-button">
-        <form method="post">
-            {% csrf_token %}
-        <button type="submit" name="submit_button" value="follow">Подписаться</button>
-        </form>
-    </div>
+            <div class="follow-btn">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="follow">+</button>
+                </form>
+            </div>
 
         {% endif %}
+
+
+            <div class="message-btn">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="send_message">Сообщение</button>
+                </form>
+            </div>
+
+            <div class="info-btn">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="send_message">i</button>
+                </form>
+            </div>
+    </div>
+
+
+
+
+<!--
+        {% if follower %}
+
+            <div class="unfollow-button">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="unfollow">Отменить подписку</button>
+                </form>
+            </div>
+
+        {% else %}
+
+            <div class="follow-button">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="follow">Подписаться</button>
+                </form>
+            </div>
+
+        {% endif %}
+
+
+            <div class="follow-button">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="send_message">Написать</button>
+                </form>
+            </div>
+-->
 
     <div class="standard">
         <h3>Лента пользователя:</h3>

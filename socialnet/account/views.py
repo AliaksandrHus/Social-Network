@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -10,7 +11,7 @@ from .models import Profile, Posts, Photo, PhotoComment, PostsComment, RePosts, 
 
 from groups.models import GroupPosts, GroupRePosts, GroupRePostsComment
 from .forms import LoginForm, RegistrationForm, PostsForm, DescriptionPhotoForm, CommentPhotoForm
-
+from usermessages.models import Dialog
 
 from itertools import chain
 import random
@@ -56,21 +57,23 @@ def profile_page(request):
 
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'create_post':
 
-            new_post = Posts()
-            new_post.author = Profile.objects.get(user=request.user.id)
-            new_post.content = request.POST['content']
-            new_post.save()
+            if request.POST['content'] or request.FILES:
 
-            if 'photo_post' in request.FILES and request.FILES['photo_post']:
+                new_post = Posts()
+                new_post.author = Profile.objects.get(user=request.user.id)
+                new_post.content = request.POST['content']
+                new_post.save()
 
-                for send_photo in request.FILES.getlist('photo_post'):
+                if 'photo_post' in request.FILES and request.FILES['photo_post']:
 
-                    photo = Photo()
-                    photo.author = Profile.objects.get(profile_id=request.user.id)
-                    photo.photo = send_photo
-                    photo.save()
-                    new_post.add_photo_in_post(photo)
-                    new_post.save()
+                    for send_photo in request.FILES.getlist('photo_post'):
+
+                        photo = Photo()
+                        photo.author = Profile.objects.get(profile_id=request.user.id)
+                        photo.photo = send_photo
+                        photo.save()
+                        new_post.add_photo_in_post(photo)
+                        new_post.save()
 
     # Кнопка загрузки фото
 
@@ -237,7 +240,11 @@ def profile_page(request):
     all_photo_right = all_photo[6:12]
     temp_right = [None for _ in range(6 - len(all_photo_right))]
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'title': 'Моя страница:',
         'posts_form': posts_form,
         'comment_form': comment_form,
@@ -310,7 +317,11 @@ def profile_page_post(request, pk_post):
     post = Posts.objects.get(id=pk_post)
     all_comment = PostsComment.objects.filter(posts=post)
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'title': f'Запись# {pk_post}',
         'user': user,
         'post': post,
@@ -385,7 +396,11 @@ def profile_page_repost(request, pk_repost):
     repost = RePosts.objects.get(id=pk_repost)
     all_comment = RePostsComment.objects.filter(reposts=repost)
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'title': f'Запись# {pk_repost}',
         'user': user,
         'post': repost,
@@ -461,7 +476,11 @@ def profile_page_group_repost(request, pk_repost):
     repost = GroupRePosts.objects.get(id=pk_repost)
     all_comment = GroupRePostsComment.objects.filter(reposts=repost)
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'title': f'Запись# {pk_repost}',
         'user': user,
         'post': repost,
@@ -507,7 +526,11 @@ def profile_page_post_repost(request, pk_post):
     comment_form = CommentPhotoForm
     post = Posts.objects.get(id=pk_post)
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'title': f'Запись# {pk_post}',
         'user': user,
         'post': post,
@@ -552,7 +575,11 @@ def profile_page_post_group_repost(request, pk_group_post):
     comment_form = CommentPhotoForm
     post = GroupPosts.objects.get(id=pk_group_post)
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'title': f'Запись# {pk_group_post}',
         'user': user,
         'post': post,
@@ -591,7 +618,11 @@ def profile_page_followers(request):
 
     i_following = Profile.objects.get(user=request.user.id).following.all()
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'person': person,
         'title': 'Мои подписчики:',
@@ -623,7 +654,11 @@ def profile_page_following(request):
     following_count = following.count()
     following = [Profile.objects.get(profile_id=target.id) for target in following]
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'person': person,
         'title': 'Мои подписки:',
@@ -644,7 +679,11 @@ def profile_page_photo(request):
     photo_all = Photo.objects.filter(author__user=request.user).order_by('-date')
     photo_tot = photo_all.count()
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'person': person,
         'title': 'Мои фотографии:',
@@ -776,7 +815,13 @@ def profile_page_photo_show(request, pk_photo):
 
             return redirect('profile_page_photo_show', pk_photo)
 
+    # Если ты читаешь этот коммент - улыбнись!) Молодец! Все получиться :)
+
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'person': person,
         'title': 'Мои фотографии:',
@@ -896,6 +941,31 @@ def another_user_page(request, pk):
             comment_delete = GroupRePostsComment.objects.get(id=comment_id)
             comment_delete.delete()
 
+    # Кнопка написать сообщение
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'send_message':
+
+            active_user = Profile.objects.get(profile_id=request.user.id)
+            target_user = Profile.objects.get(profile_id=pk)
+
+            dialog = Dialog.objects.filter(user_list=active_user).filter(user_list=target_user).first()
+
+            # Если диалога нет - создаем и переходим
+
+            if not dialog:
+
+                new_dialog = Dialog()
+                new_dialog.creator = active_user
+                new_dialog.save()
+                new_dialog.user_list.add(active_user)
+                new_dialog.user_list.add(target_user)
+
+                return redirect('dialog', new_dialog.id)
+
+            # Если диалога есть - переходим
+
+            else: return redirect('dialog', dialog.id)
+
     if request.user.id != pk:
 
         user = f'{request.user.first_name} {request.user.last_name}'
@@ -946,7 +1016,11 @@ def another_user_page(request, pk):
 
         comment_form = CommentPhotoForm
 
+        not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+        not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
         data = {
+            'not_read_message': not_read_message,
             'title': f'Пользователь #{pk}',
             'user': user,
             'person': person,
@@ -1013,7 +1087,11 @@ def another_user_page_post(request, pk, pk_post):
     post = Posts.objects.get(id=pk_post)
     all_comment = PostsComment.objects.filter(posts=post)
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'title': f'Запись# {pk_post}',
         'user': user,
         'post': post,
@@ -1088,7 +1166,11 @@ def another_user_page_repost(request, pk, pk_repost):
     repost = RePosts.objects.get(id=pk_repost)
     all_comment = RePostsComment.objects.filter(reposts=repost)
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'title': f'Запись# {pk_repost}',
         'user': user,
         'post': repost,
@@ -1163,7 +1245,11 @@ def another_user_page_group_repost(request, pk, pk_repost):
     repost = GroupRePosts.objects.get(id=pk_repost)
     all_comment = GroupRePostsComment.objects.filter(reposts=repost)
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'title': f'Запись# {pk_repost}',
         'user': user,
         'post': repost,
@@ -1205,7 +1291,11 @@ def another_user_page_followers(request, pk):
 
     i_following = Profile.objects.get(user=request.user.id).following.all()
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'user_id': user_id,
         'person': person,
@@ -1250,7 +1340,11 @@ def another_user_page_following(request, pk):
 
     i_following = Profile.objects.get(user=request.user.id).following.all()
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'user_id': user_id,
         'person': person,
@@ -1273,7 +1367,11 @@ def another_user_page_photo(request, pk):
     photo_all = Photo.objects.filter(author__user=person.user).order_by('-date')
     photo_tot = photo_all.count()
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'person': person,
         'title': 'Фотографии:',
@@ -1377,7 +1475,11 @@ def another_user_page_photo_show(request, pk, pk_photo):
 
             return redirect('another_user_page_photo_show', pk, pk_photo)
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'user': user,
         'person': person,
         'title': 'Фотографии:',
@@ -1399,7 +1501,11 @@ def settings_page(request):
 
     user = f'{request.user.first_name} {request.user.last_name}'
 
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
     data = {
+        'not_read_message': not_read_message,
         'title': 'Настройки',
         'user': user
     }
