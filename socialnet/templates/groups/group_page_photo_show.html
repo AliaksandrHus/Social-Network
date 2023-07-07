@@ -1,4 +1,4 @@
-{% extends 'account/base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}{{ title }}{% endblock %}
@@ -38,7 +38,7 @@
 
         <img  src="{{ photo_single.photo.url }}">
 
-        {% if group.user == request.user %}
+        {% if group.user == request.user or request.user.id in team %}
 
         <form method="post">
             {% csrf_token %}
@@ -57,7 +57,7 @@
         <button class="splitter-right" type="submit" name="submit_button" value="forward"></button>
         </form>
 
-        {% if group.user == request.user %}
+        {% if group.user == request.user or request.user.id in team %}
 
         <form method="post">
             {% csrf_token %}
@@ -156,7 +156,7 @@
 
                 {% endif %}
 
-                {% if group.user == request.user %}
+                {% if group.user == request.user or request.user.id in team %}
 
                     <form method="post">
                         {% csrf_token %}
@@ -174,7 +174,7 @@
 
             <div class="photo-comment">
 
-                {% if group.user == request.user %}
+                {% if group.user == request.user or request.user.id in team %}
 
                 <form method="post">
                     {% csrf_token %}

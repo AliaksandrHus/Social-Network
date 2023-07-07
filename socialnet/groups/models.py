@@ -12,7 +12,8 @@ class Group(models.Model):
     first_name = models.CharField(max_length=20)
 
     team = models.ManyToManyField(User, related_name='team', blank=True)
-    description = models.CharField(max_length=200, blank=True)
+    group_info = models.TextField(max_length=500, blank=True)
+    group_status = models.TextField(blank=True)
 
     followers = models.ManyToManyField(User, related_name='group_followers', blank=True)
 

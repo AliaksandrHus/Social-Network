@@ -60,6 +60,10 @@ def groups(request):
 @login_required(login_url='/')
 def group_view(request, group_id):
 
+    """Страница просмотра группы"""
+
+    group_info = ''
+
     if request.method == 'POST':
 
     # Кнопка новый аватар
@@ -173,6 +177,48 @@ def group_view(request, group_id):
             person = Profile.objects.get(profile_id=request.user.id)
             person.unfollow(Group.objects.get(profile_id=group_id))
 
+    # Кнопка написать сообщение
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'send_message':
+
+            group = Group.objects.get(profile_id=group_id)
+
+            active_user = Profile.objects.get(profile_id=request.user.id)
+            target_user = Profile.objects.get(profile_id=group.user.id)
+
+            dialog = Dialog.objects.filter(user_list=active_user).filter(user_list=target_user).first()
+
+            # Если диалога нет - создаем и переходим
+
+            if not dialog:
+
+                new_dialog = Dialog()
+                new_dialog.creator = active_user
+                new_dialog.save()
+                new_dialog.user_list.add(active_user)
+                new_dialog.user_list.add(target_user)
+
+                return redirect('dialog', new_dialog.id)
+
+            # Если диалога есть - переходим
+
+            else: return redirect('dialog', dialog.id)
+
+    # Кнопка показать информацию
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'show_info':
+
+            group_info = Group.objects.get(profile_id=group_id).group_info
+            if not group_info: group_info = 'Не заполнено...'
+
+    # Кнопка создать описание
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_info':
+
+            group = Group.objects.get(profile_id=group_id)
+            group.group_info = request.POST['comment']
+            group.save()
+
     all_photo = GroupPhoto.objects.filter(author=group_id).order_by('-date')
 
     photo_count = all_photo.count()
@@ -250,6 +296,7 @@ def group_view(request, group_id):
         'temp_left': temp_left,
         'all_photo_right': all_photo_right,
         'temp_right': temp_right,
+        'group_info': group_info,
     }
 
     return render(request, 'groups/group_page.html', data)
@@ -288,6 +335,9 @@ def group_followers(request, group_id):
 
     i_following = Profile.objects.get(user=request.user.id).following.all()
 
+    team = Group.objects.get(profile_id=group_id).team.all()
+    team = [target.id for target in team]
+
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
     not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
 
@@ -296,6 +346,7 @@ def group_followers(request, group_id):
         'user': user,
         'user_id': user_id,
         'group': group,
+        'team': team,
         'title': 'Подписчики:',
         'i_following': i_following,
         'followers': followers,
@@ -303,14 +354,6 @@ def group_followers(request, group_id):
     }
 
     return render(request, 'groups/group_followers.html', data)
-
-
-
-
-
-
-
-
 
 
 @login_required(login_url='/')
@@ -376,9 +419,6 @@ def group_team(request, group_id):
             group = get_object_or_404(Group, profile_id=group_id)
             group.team.remove(User.objects.get(pk=user_pk))
 
-
-
-
     user = f'{request.user.first_name} {request.user.last_name}'
     user_id = request.user
 
@@ -394,7 +434,6 @@ def group_team(request, group_id):
 
     check_team = Profile.objects.get(profile_id=request.user.id)
 
-
     i_following = Profile.objects.get(user=request.user.id).following.all()
 
     comment_form = CommentPhotoForm
@@ -402,11 +441,7 @@ def group_team(request, group_id):
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
     not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
 
-    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
-    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
-
     data = {
-        'not_read_message': not_read_message,
         'not_read_message': not_read_message,
         'user': user,
         'user_id': user_id,
@@ -424,17 +459,6 @@ def group_team(request, group_id):
     return render(request, 'groups/group_team.html', data)
 
 
-
-
-
-
-
-
-
-
-
-
-
 @login_required(login_url='/')
 def groups_photo(request, group_id):
 
@@ -443,6 +467,9 @@ def groups_photo(request, group_id):
     photo_all = GroupPhoto.objects.filter(author=group).order_by('-date')
     photo_tot = photo_all.count()
 
+    team = Group.objects.get(profile_id=group_id).team.all()
+    team = [target.id for target in team]
+
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
     not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
 
@@ -450,6 +477,7 @@ def groups_photo(request, group_id):
         'not_read_message': not_read_message,
         'user': user,
         'group': group,
+        'team': team,
         'title': 'Фотографии:',
         'photo_all': photo_all,
         'photo_tot': photo_tot,
@@ -596,6 +624,9 @@ def groups_photo_show(request, group_id, pk_photo):
 
     all_comment = list(sorted(chain(comments_user, comments_author), key=lambda x: x.date))
 
+    team = Group.objects.get(profile_id=group_id).team.all()
+    team = [target.id for target in team]
+
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
     not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
 
@@ -603,6 +634,7 @@ def groups_photo_show(request, group_id, pk_photo):
         'not_read_message': not_read_message,
         'user': user,
         'group': group,
+        'team': team,
         'title': 'Фотографии сообщества:',
         'photo_line': photo_line,
         'photo_single': photo_single,
@@ -691,6 +723,9 @@ def groups_post(request, group_id, pk_post):
     comments_author = GroupPostsCommentAuthor.objects.filter(posts=post)
     all_comment = list(sorted(chain(comments_user, comments_author), key=lambda x: x.date))
 
+    team = Group.objects.get(profile_id=group_id).team.all()
+    team = [target.id for target in team]
+
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
     not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
 
@@ -700,6 +735,7 @@ def groups_post(request, group_id, pk_post):
         'title': f'Пост {pk_post}',
         'group': group,
         'post': post,
+        'team': team,
         'comment_form': comment_form,
         'all_comment': all_comment,
     }

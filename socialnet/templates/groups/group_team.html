@@ -1,4 +1,4 @@
-{% extends 'account/base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}{{ title }}{% endblock %}
@@ -114,7 +114,7 @@
         {% endfor %}
 
 
-    {% if group.user == request.user %}
+        {% if group.user == request.user or request.user.id in team %}
 
         <div class="standard">
 
