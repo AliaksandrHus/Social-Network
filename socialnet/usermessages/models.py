@@ -3,7 +3,10 @@ from django.db.models.signals import post_save
 from django.db import models
 from django.dispatch import receiver
 
-from account.models import Profile
+from account.models import Profile, Posts, Photo, PhotoComment, PostsComment, RePosts, RePostsComment
+
+from groups.models import Group, GroupPosts, GroupRePosts, GroupPostsComment, GroupRePostsComment, GroupPostsCommentAuthor
+from groups.models import GroupPhoto, GroupPhotoCommentAuthor, GroupPhotoComment
 
 
 class Dialog(models.Model):
@@ -64,6 +67,12 @@ class Messages(models.Model):
     photo_post = models.ManyToManyField(MessagePhoto, related_name='photo_messages', blank=True)
     date = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
+
+    send_photo = models.ForeignKey(Photo, on_delete=models.SET_NULL, null=True, blank=True, related_name='messsage_send_photo')
+    send_post = models.ForeignKey(Posts, on_delete=models.SET_NULL, null=True, blank=True, related_name='messsage_send_post')
+    send_repost = models.ForeignKey(RePosts, on_delete=models.SET_NULL, null=True, blank=True, related_name='messsage_send_repost')
+    send_group_post = models.ForeignKey(GroupPosts, on_delete=models.SET_NULL, null=True, blank=True, related_name='messsage_send_group_post')
+    send_group_repost = models.ForeignKey(GroupRePosts, on_delete=models.SET_NULL, null=True, blank=True, related_name='messsage_send_group_repost')
 
     # методы
 

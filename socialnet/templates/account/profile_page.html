@@ -1,9 +1,50 @@
-{% extends 'account/base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
+
+    {% if status %}
+
+    <div class="status">
+
+        <div class="status-block">
+        <p>{{ status }}</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <button class="set-status" type="submit" name="submit_button" value="delete_status">✕</button>
+        </form>
+        </div>
+
+    </div>
+
+    <div class="triangle"></div>
+
+
+    {% else %}
+
+    <div class="status">
+
+        <form method="post">
+            {% csrf_token %}
+            {{ status_form.status }}
+            <button class="set-status" type="submit" name="submit_button" value="create_status">+</button>
+        </form>
+    </div>
+
+    <div class="triangle"></div>
+
+    {% endif %}
+
+
+
+
+
+
+
+
 
     <div class="avatar">
         <form method="post" enctype="multipart/form-data" id="myForm">
@@ -13,9 +54,14 @@
         <img src="{{ person.avatar.url }}">
     </div>
 
-    <div class="standard">
+    <div class="name-admin">
         <h3>{{ person.first_name }} {{ person.last_name }}</h3>
+        {% if person.user_admin %}
+            <span>&nbsp;Admin&nbsp;</span>
+        {% endif %}
     </div>
+
+
 
     <div class="followers-following-container">
 
@@ -117,6 +163,42 @@
         </div>
 
     </div>
+
+    {% if profile_info %}
+
+    <div class="profile-info">
+        <h3>Описание вашего профиля:</h3>
+            {{ profile_info }}
+        <br>
+        <br>
+        <a href="{% url 'settings_page_edit_profile' %}">редактировать</a>
+    </div>
+
+    <div class="add_message_info">
+
+            <div class="message-btn-close">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="close_info">О себе</button>
+                </form>
+            </div>
+    </div>
+
+    {% else %}
+
+    <div class="add_message_info">
+
+            <div class="message-btn">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="show_info">О себе</button>
+                </form>
+            </div>
+    </div>
+
+    {% endif %}
+
+    <br>
 
     <div class="standard">
         <h3>Добавить пост в ленту:</h3>
@@ -340,10 +422,6 @@
 
                 <br>
 
-
-
-
-
             {% elif post.type_object == 'RePosts' %}
 
 
@@ -545,10 +623,6 @@
                 </div>
 
                 <br>
-
-
-
-
 
             {% elif post.type_object == 'Posts' %}
 

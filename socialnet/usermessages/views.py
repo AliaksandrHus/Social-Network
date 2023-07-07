@@ -123,6 +123,54 @@ def dialog(request, dialog_id):
                 dialog.last_message_time = message.date
                 dialog.save()
 
+        # Пост - Кнопка поставить / отменить лайк
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like_post':
+
+            need_post = Posts.objects.get(id=request.POST['post_id'])
+            need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike_post':
+
+            need_post = Posts.objects.get(id=request.POST['post_id'])
+            need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
+
+        # Репост - Кнопка поставить / отменить лайк
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like_repost':
+
+            need_post = Posts.objects.get(id=request.POST['post_id'])
+            need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike_repost':
+
+            need_post = Posts.objects.get(id=request.POST['post_id'])
+            need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
+
+        # Репост группы - Кнопка поставить / отменить лайк
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like_group_post':
+
+            need_post = GroupPosts.objects.get(id=request.POST['post_id'])
+            need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike_group_post':
+
+            need_post = GroupPosts.objects.get(id=request.POST['post_id'])
+            need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
+
+        # Репост группы - Кнопка поставить / отменить лайк
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like_group_repost':
+
+            need_post = GroupPosts.objects.get(id=request.POST['post_id'])
+            need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike_group_repost':
+
+            need_post = GroupPosts.objects.get(id=request.POST['post_id'])
+            need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
+
         # Обновить страницу при прокрутке вверх
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'add_message_list':
@@ -133,13 +181,15 @@ def dialog(request, dialog_id):
     posts_form = PostsForm
     comment_form = CommentPhotoForm
 
+    another_user = Dialog.objects.get(id=dialog_id).user_list.exclude(profile_id=request.user.id).first()
+    print(another_user)
+
     for message in Messages.objects.filter(dialog=dialog_id):
         if message.author.profile_id != request.user.id:
             message.read = True
             message.save()
 
     messages_all = list(Messages.objects.filter(dialog=dialog_id).order_by('date'))
-
     messages = list(messages_all)[start_slice:]
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
@@ -153,6 +203,7 @@ def dialog(request, dialog_id):
         'posts_form': posts_form,
         'comment_form': comment_form,
         'start_slice': start_slice,
+        'another_user': another_user,
     }
 
     return render(request, 'usermessages/single_dialog.html', data)

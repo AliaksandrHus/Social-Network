@@ -1,0 +1,751 @@
+{% extends 'base-useradmin.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+<form method="post">
+    {% csrf_token %}
+    <button id="submitBtn" name="submit_button" value="add_message_list" style="display:none;"></button>
+        <input type="hidden" name="slice" value="{{ start_slice }}">
+
+</form>
+
+<script src="media/static/account/js/account.js"></script>
+
+    <div class="standard">
+        <h3>Диалог:</h3>
+    </div>
+
+
+    {% for message in messages %}
+
+    <div class="message-all-comment">
+        <a href="/useradmin/user-{{ message.author.profile_id }}">
+                <img src="{{ message.author.avatar.url }}"></a>
+            <div class="message-comment-user-date">
+                <a href="/useradmin/user-{{ message.author.profile_id }}">{{ message.author.first_name }}</a>
+                <span class="message-comment-date">{{ message.date }}</span>
+            </div>
+
+            {% if message.read %}
+                <p>{{ message.content }}</p>
+            {% else %}
+                <p id="message-not-read">{{ message.content }}</p>
+            {% endif %}
+
+        {% if message.author.user.id == 1 %}
+
+            <form method="post">
+                {% csrf_token %}
+                <button class="message-delete-comment" type="submit" name="submit_button" value="message-delete">✕</button>
+                <input type="hidden" name="message_id" value="{{ message.id }}">
+            </form>
+
+        {% endif %}
+
+    </div>
+
+            {% for photo in message.photo_post.all %}
+            <div class="message-photo">
+                <div class="message-photo-1">
+                    <img src="{{ photo.photo.url }}">
+                </div>
+            </div>
+            {% endfor %}
+
+
+
+            {% if message.send_group_post %}
+
+            <div class="posts-all">
+
+                <div class="posts-all-container">
+                        <a href="/useradmin/group-{{ message.send_group_post.author.profile_id }}"><img src="{{ message.send_group_post.author.avatar.url }}"></a>
+                    <div class="posts-comment-user-date">
+                        <a href="/useradmin/group-{{ message.send_group_post.author.profile_id }}">{{ message.send_group_post.author }}</a>
+                        <span class="posts-comment-date">{{ message.send_group_post.date }}</span>
+                    </div>
+                </div>
+
+                {% if message.send_group_post.photo_post.all|length == 1 %}
+                    <div class="posts-all-1">
+                        <a href="/useradmin/group-{{ message.send_group_post.author.profile_id }}/photo/show-{{ message.send_group_post.photo_post.all.first.id }}">
+                            <img src="{{ message.send_group_post.photo_post.all.first.photo.url }}"></a>
+                    </div>
+                {% elif message.send_group_post.photo_post.all|length == 2 %}
+                    <div class="posts-all-2">
+                        {% for photo in message.send_group_post.photo_post.all %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_group_post.photo_post.all|length == 3 %}
+                    <div class="posts-all-1">
+                        <a href="/useradmin/group-{{ message.send_group_post.author.profile_id }}/photo/show-{{ message.send_group_post.photo_post.all.first.id }}">
+                            <img src="{{ message.send_group_post.photo_post.all.first.photo.url }}"></a>
+                    </div>
+                    <div class="posts-all-2">
+                        {% for photo in message.send_group_post.photo_post.all|slice:"1:" %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_group_post.photo_post.all|length == 4 %}
+                    <div class="posts-all-1">
+                        <a href="/useradmin/group-{{ message.send_group_post.author.profile_id }}/photo/show-{{ message.send_group_post.photo_post.all.first.id }}">
+                            <img src="{{ message.send_group_post.photo_post.all.first.photo.url }}"></a>
+                    </div>
+                    <div class="posts-all-3">
+                        {% for photo in message.send_group_post.photo_post.all|slice:"1:" %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_group_post.photo_post.all|length == 5 %}
+                    <div class="posts-all-1">
+                        <a href="/useradmin/group-{{ message.send_group_post.author.profile_id }}/photo/show-{{ message.send_group_post.photo_post.all.first.id }}">
+                            <img src="{{ message.send_group_post.photo_post.all.first.photo.url }}"></a>
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_group_post.photo_post.all|slice:"1:" %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_group_post.photo_post.all|length == 6 %}
+                    <div class="posts-all-2">
+                        {% for photo in message.send_group_post.photo_post.all|slice:":2" %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_group_post.photo_post.all|slice:"2:" %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_group_post.photo_post.all|length == 7 %}
+                    <div class="posts-all-3">
+                        {% for photo in message.send_group_post.photo_post.all|slice:":3" %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_group_post.photo_post.all|slice:"3:" %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_group_post.photo_post.all|length == 8 %}
+                    <div class="posts-all-4">
+                        {% for photo in message.send_group_post.photo_post.all|slice:":4" %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_group_post.photo_post.all|slice:"4:" %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_group_post.photo_post.all|length > 8 %}
+                    <div class="posts-all-4">
+                        {% for photo in message.send_group_post.photo_post.all|slice:":4" %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_group_post.photo_post.all|slice:"4:8" %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                        <span class="posts-comment-date">+ еще {{ message.send_group_post.photo_post.all|slice:"8:"|length }} фото в посте</span>
+                {% endif %}
+
+                    <div class="posts-text">
+                        <p>{{ message.send_group_post.content }}</p>
+                    </div>
+
+                     {% if request.user in message.send_group_post.like_post.all %}
+
+                        <div class="unlike-button">
+                            <form method="post">
+                                {% csrf_token %}
+                            <button type="submit" name="submit_button" value="set_unlike_group_post">❤&nbsp;&nbsp;{{ message.send_group_post.like_post.all|length }}</button>
+                                <input type="hidden" name="post_id" value="{{ message.send_group_post.id }}">
+                            </form>
+                            <p>&nbsp;</p>
+                        </div>
+
+                    {% else %}
+
+                        <div class="like-button">
+                            <form method="post">
+                                {% csrf_token %}
+                            <button type="submit" name="submit_button" value="set_like_group_post">❤&nbsp;&nbsp;{{ message.send_group_post.like_post.all|length }}</button>
+                                <input type="hidden" name="post_id" value="{{ message.send_group_post.id }}">
+                            </form>
+                            <p>&nbsp;</p>
+
+                        </div>
+
+                    {% endif %}
+
+                    <div class="view-post-b">
+                        <form action="/useradmin/group-{{ message.send_group_post.author.profile_id }}/post-{{ message.send_group_post.id }}">
+                            <button class="view-post"><p>➤</p></button>
+                        </form>
+                    </div>
+            </div>
+
+            <br>
+
+            {% endif %}
+
+
+
+
+
+
+
+            {% if message.send_group_repost %}
+
+                <div class="photo-all-comment">
+                <a href="/useradmin/user-{{ message.send_group_repost.author.profile_id }}"><img src="{{ message.send_group_repost.author.avatar.url }}"></a>
+                    <div class="photo-comment-user-date">
+                        <a href="/useradmin/user-{{ message.send_group_repost.author.profile_id }}">{{ message.send_group_repost.author }}</a>
+                        <span class="photo-comment-date">{{ message.send_group_repost.date }}</span>
+                    </div>
+                <p>{{ message.send_group_repost.content }}</p>
+
+        </div>
+
+                <div class="view-post-b-group">
+                <form action="/useradmin/user-{{ message.send_group_repost.author.profile_id }}/grop-repost-{{ message.send_group_repost.id }}">
+                    <button class="view-post"><p>➤</p></button>
+                </form>
+
+            </div>
+
+            <div class="posts-all">
+
+                <div class="posts-all-container">
+                        <a href="/useradmin/group-{{ message.send_group_repost.post.author.profile_id }}">
+                            <img src="{{ message.send_group_repost.post.author.avatar.url }}"></a>
+                    <div class="posts-comment-user-date">
+                        <a href="/useradmin/group-{{ message.send_group_repost.post.author.profile_id }}">{{ message.send_group_repost.post.author }}</a>
+                        <span class="posts-comment-date">{{ message.send_group_repost.post.date }}</span>
+                    </div>
+                </div>
+
+                {% if message.send_group_repost.post.photo_post.all|length == 1 %}
+                    <div class="posts-all-1">
+                        <a href="/useradmin/group-{{ message.send_group_repost.post.author.profile_id }}/photo/show-{{ message.send_group_repost.post.photo_post.all.first.id }}">
+                            <img src="{{ message.send_group_repost.post.photo_post.all.first.photo.url }}"></a>
+                    </div>
+                {% elif message.send_group_repost.post.photo_post.all|length == 2 %}
+                    <div class="posts-all-2">
+                        {% for photo in message.send_group_repost.post.photo_post.all %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_group_repost.post.photo_post.all|length == 2 %}
+                    <div class="posts-all-1">
+                        <a href="/useradmin/group-{{ message.send_group_repost.post.author.profile_id }}/photo/show-{{ message.send_group_repost.post.photo_post.all.first.id }}">
+                            <img src="{{ message.send_group_repost.post.photo_post.all.first.photo.url }}"></a>
+                    </div>
+                    <div class="posts-all-2">
+                        {% for photo in message.send_group_repost.post.photo_post.all %}
+                         <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_group_repost.post.photo_post.all|length == 2 %}
+                    <div class="posts-all-1">
+                        <a href="/useradmin/group-{{ message.send_group_repost.post.author.profile_id }}/photo/show-{{ message.send_group_repost.post.photo_post.all.first.id }}">
+                            <img src="{{ message.send_group_repost.post.photo_post.all.first.photo.url }}"></a>
+                    </div>
+                    <div class="posts-all-3">
+                        {% for photo in message.send_group_repost.post.photo_post.all %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_group_repost.post.photo_post.all|length == 2 %}
+                    <div class="posts-all-1">
+                        <a href="/useradmin/group-{{ message.send_group_repost.post.author.profile_id }}/photo/show-{{ message.send_group_repost.post.photo_post.all.first.id }}">
+                            <img src="{{ message.send_group_repost.post.photo_post.all.first.photo.url }}"></a>
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_group_repost.post.photo_post.all %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_group_repost.post.photo_post.all|length == 2 %}
+                    <div class="posts-all-2">
+                        {% for photo in message.send_group_repost.post.photo_post.all %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_group_repost.post.photo_post.all %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_group_repost.post.photo_post.all|length == 2 %}
+                    <div class="posts-all-3">
+                        {% for photo in message.send_group_repost.post.photo_post.all %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_group_repost.post.photo_post.all %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_group_repost.post.photo_post.all|length == 2 %}
+                    <div class="posts-all-4">
+                        {% for photo in message.send_group_repost.post.photo_post.all %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_group_repost.post.photo_post.all %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_group_repost.post.photo_post.all|length == 2 %}
+                    <div class="posts-all-4">
+                        {% for photo in message.send_group_repost.post.photo_post.all %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_group_repost.post.photo_post.all %}
+                        <a href="/useradmin/group-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                        <span class="posts-comment-date">+ еще {{ message.send_group_repost.post.photo_post.all|slice:"8:"|length }} фото в посте</span>
+                {% endif %}
+
+                    <div class="posts-text">
+                        <p>{{ message.send_group_repost.post.content }}</p>
+                    </div>
+
+                     {% if request.user in message.send_group_repost.post.like_post.all %}
+
+                        <div class="unlike-button">
+                            <form method="post">
+                                {% csrf_token %}
+                            <button type="submit" name="submit_button" value="set_unlike_group_repost">❤&nbsp;&nbsp;{{ message.send_group_repost.post.like_post.all|length }}</button>
+                                <input type="hidden" name="post_id" value="{{ message.send_group_repost.post.id }}">
+                            </form>
+                            <p>&nbsp;</p>
+                        </div>
+
+                    {% else %}
+
+                        <div class="like-button">
+                            <form method="post">
+                                {% csrf_token %}
+                            <button type="submit" name="submit_button" value="set_like_group_repost">❤&nbsp;&nbsp;{{ message.send_group_repost.post.like_post.all|length }}</button>
+                                <input type="hidden" name="post_id" value="{{ message.send_group_repost.post.id }}">
+                            </form>
+                            <p>&nbsp;</p>
+
+                        </div>
+
+                    {% endif %}
+
+                    <div class="view-post-b">
+                        <form action="/useradmin/group-{{ message.send_group_repost.post.author.profile_id }}/post-{{ message.send_group_repost.post.id }}">
+                            <button class="view-post"><p>➤</p></button>
+                        </form>
+                    </div>
+            </div>
+
+            <br>
+
+            {% endif %}
+
+            {% if message.send_post %}
+
+               <div class="posts-all">
+
+                <div class="posts-all-container">
+                        <a href="/useradmin/user-{{ post.author.profile_id }}{{ message.send_post.author.profile_id }}"><img src="{{ message.send_post.author.avatar.url }}"></a>
+                    <div class="posts-comment-user-date">
+                        <a href="/useradmin/user-{{ post.author.profile_id }}{{ message.send_post.author.profile_id }}">{{ message.send_post.author }}</a>
+                        <span class="posts-comment-date">{{ message.send_post.date }}</span>
+                    </div>
+                </div>
+
+                {% if message.send_post.photo_post.all|length == 1 %}
+                    <div class="posts-all-1">
+                        <a href="/useradmin/user-{{ message.send_post.author.profile_id }}/photo/show-{{ message.send_post.photo_post.all.first.id }}">
+                            <img src="{{ message.send_post.photo_post.all.first.photo.url }}"></a>
+                    </div>
+                {% elif message.send_post.photo_post.all|length == 2 %}
+                    <div class="posts-all-2">
+                        {% for photo in message.send_post.photo_post.all %}
+                        <a href="/useradmin/user-{{ message.send_post.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_post.photo_post.all|length == 3 %}
+                    <div class="posts-all-1">
+                        <a href="/useradmin/user-{{ message.send_post.author.profile_id }}/photo/show-{{ message.send_post.photo_post.all.first.id }}">
+                            <img src="{{ message.send_post.photo_post.all.first.photo.url }}"></a>
+                    </div>
+                    <div class="posts-all-2">
+                        {% for photo in message.send_post.photo_post.all|slice:"1:" %}
+                        <a href="/useradmin/user-{{ message.send_post.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_post.photo_post.all|length == 4 %}
+                    <div class="posts-all-1">
+                        <a href="/useradmin/user-{{ message.send_post.author.profile_id }}/photo/show-{{ message.send_post.photo_post.all.first.id }}">
+                            <img src="{{ message.send_post.photo_post.all.first.photo.url }}"></a>
+                    </div>
+                    <div class="posts-all-3">
+                        {% for photo in message.send_post.photo_post.all|slice:"1:" %}
+                        <a href="/useradmin/user-{{ message.send_post.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_post.photo_post.all|length == 5 %}
+                    <div class="posts-all-1">
+                        <a href="/useradmin/user-{{ message.send_post.author.profile_id }}/photo/show-{{ message.send_post.photo_post.all.first.id }}">
+                            <img src="{{ message.send_post.photo_post.all.first.photo.url }}"></a>
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_post.photo_post.all|slice:"1:" %}
+                        <a href="/useradmin/user-{{ message.send_post.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send__post.photo_post.all|length == 6 %}
+                    <div class="posts-all-2">
+                        {% for photo in message.send_post.photo_post.all|slice:":2" %}
+                        <a href="/useradmin/user-{{ message.send_post.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_post.photo_post.all|slice:"2:" %}
+                        <a href="/useradmin/user-{{ message.send_post.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_post.photo_post.all|length == 7 %}
+                    <div class="posts-all-3">
+                        {% for photo in message.send_post.photo_post.all|slice:":3" %}
+                        <a href="/useradmin/user-{{ message.send_post.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_post.photo_post.all|slice:"3:" %}
+                        <a href="/useradmin/user-{{ message.send_post.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_post.photo_post.all|length == 8 %}
+                    <div class="posts-all-4">
+                        {% for photo in message.send_post.photo_post.all|slice:":4" %}
+                        <a href="/useradmin/user-{{ message.send_post.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_post.photo_post.all|slice:"4:" %}
+                        <a href="/useradmin/user-{{ message.send_post.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_post.photo_post.all|length > 8 %}
+                    <div class="posts-all-4">
+                        {% for photo in message.send_post.photo_post.all|slice:":4" %}
+                        <a href="/useradmin/user-{{ message.send_post.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_post.photo_post.all|slice:"4:8" %}
+                        <a href="/useradmin/user-{{ message.send_post.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                        <span class="posts-comment-date">+ еще {{ message.send_post.photo_post.all|slice:"8:"|length }} фото в посте</span>
+                {% endif %}
+
+                    <div class="posts-text">
+                        <p>{{ message.send_post.content }}</p>
+                    </div>
+
+                     {% if request.user in message.send_post.like_post.all %}
+
+                        <div class="unlike-button">
+                            <form method="post">
+                                {% csrf_token %}
+                            <button type="submit" name="submit_button" value="set_unlike_post">❤&nbsp;&nbsp;{{ message.send_post.like_post.all|length }}</button>
+                                <input type="hidden" name="post_id" value="{{ message.send_post.id }}">
+                            </form>
+                            <p>&nbsp;</p>
+                        </div>
+
+                    {% else %}
+
+                        <div class="like-button">
+                            <form method="post">
+                                {% csrf_token %}
+                            <button type="submit" name="submit_button" value="set_like_post">❤&nbsp;&nbsp;{{ message.send_post.like_post.all|length }}</button>
+                                <input type="hidden" name="post_id" value="{{ message.send_post.id }}">
+                            </form>
+                            <p>&nbsp;</p>
+
+                        </div>
+
+                    {% endif %}
+
+                    <div class="view-post-b">
+                        <form action="/useradmin/user-{{ message.send_post.author.profile_id }}/post-{{ message.send_post.id }}">
+                            <button class="view-post"><p>➤</p></button>
+                        </form>
+                    </div>
+            </div>
+
+            <br>
+
+
+            {% endif %}
+
+
+
+            {% if message.send_repost %}
+
+
+                <div class="photo-all-comment">
+                <a href="/useradmin/user-{{ message.send_repost.author.profile_id }}"><img src="{{ message.send_repost.author.avatar.url }}"></a>
+                    <div class="photo-comment-user-date">
+                        <a href="/useradmin/user-{{ message.send_repost.author.profile_id }}">{{ message.send_repost.author }}</a>
+                        <span class="photo-comment-date">{{ message.send_repost.date }}</span>
+                    </div>
+                <p>{{ message.send_repost.content }}</p>
+            </div>
+
+             <div class="view-post-b-group">
+                <form action="/useradmin/user-{{ message.send_repost.author.profile_id }}/repost-{{ message.send_repost.id }}">
+                    <button class="view-post"><p>➤</p></button>
+                </form>
+             </div>
+
+            <div class="posts-all">
+
+                <div class="posts-all-container">
+                        <a href="/useradmin/user-{{ message.send_repost.post.author.profile_id }}">
+                            <img src="{{ message.send_repost.post.author.avatar.url }}"></a>
+                    <div class="posts-comment-user-date">
+                        <a href="/useradmin/user-{{ message.send_repost.post.author.profile_id }}">{{ message.send_repost.post.author }}</a>
+                        <span class="posts-comment-date">{{ message.send_repost.post.date }}</span>
+                    </div>
+                </div>
+                {% if message.send_repost.post.photo_post.all|length == 1 %}
+                    <div class="posts-all-1">
+                        <a href="/useradmin/user-{{ message.send_repost.post.author.profile_id }}/photo/show-{{ message.send_repost.post.photo_post.all.first.id }}">
+                            <img src="{{ message.send_repost.post.photo_post.all.first.photo.url }}"></a>
+                    </div>
+                {% elif message.send_repost.post.photo_post.all|length == 2 %}
+                    <div class="posts-all-2">
+                        {% for photo in message.send_repost.post.photo_post.all %}
+                        <a href="/useradmin/user-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_repost.post.photo_post.all|length == 2 %}
+                    <div class="posts-all-1">
+                        <a href="/useradmin/user-{{ message.send_repost.post.author.profile_id }}/photo/show-{{ message.send_repost.post.photo_post.all.first.id }}">
+                            <img src="{{ message.send_repost.post.photo_post.all.first.photo.url }}"></a>
+                    </div>
+                    <div class="posts-all-2">
+                        {% for photo in message.send_repost.post.photo_post.all %}
+                        <a href="/useradmin/user-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_repost.post.photo_post.all|length == 2 %}
+                    <div class="posts-all-1">
+                        <a href="/useradmin/user-{{ message.send_repost.post.author.profile_id }}/photo/show-{{ message.send_repost.post.photo_post.all.first.id }}">
+                            <img src="{{ message.send_repost.post.photo_post.all.first.photo.url }}"></a>
+                    </div>
+                    <div class="posts-all-3">
+                        {% for photo in message.send_repost.post.photo_post.all %}
+                        <a href="/useradmin/user-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_repost.post.photo_post.all|length == 2 %}
+                    <div class="posts-all-1">
+                        <a href="/useradmin/user-{{ message.send_repost.post.author.profile_id }}/photo/show-{{ message.send_repost.post.photo_post.all.first.id }}">
+                            <img src="{{ message.send_repost.post.photo_post.all.first.photo.url }}"></a>
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_repost.post.photo_post.all %}
+                        <a href="/useradmin/user-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_repost.post.photo_post.all|length == 2 %}
+                    <div class="posts-all-2">
+                        {% for photo in message.send_repost.post.photo_post.all %}
+                        <a href="/useradmin/user-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_repost.post.photo_post.all %}
+                        <a href="/useradmin/user-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_repost.post.photo_post.all|length == 2 %}
+                    <div class="posts-all-3">
+                        {% for photo in message.send_repost.post.photo_post.all %}
+                        <a href="/useradmin/user-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_repost.post.photo_post.all %}
+                        <a href="/useradmin/user-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_repost.post.photo_post.all|length == 2 %}
+                    <div class="posts-all-4">
+                        {% for photo in message.send_repost.post.photo_post.all %}
+                        <a href="/useradmin/user-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_repost.post.photo_post.all %}
+                        <a href="/useradmin/user-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                {% elif message.send_repost.post.photo_post.all|length == 2 %}
+                    <div class="posts-all-4">
+                        {% for photo in message.send_repost.post.photo_post.all %}
+                        <a href="/useradmin/user-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                    <div class="posts-all-4">
+                        {% for photo in message.send_repost.post.photo_post.all %}
+                        <a href="/useradmin/user-{{ photo.author.profile_id }}/photo/show-{{ photo.id }}">
+                            <img src="{{ photo.photo.url }}"></a>
+                        {% endfor %}
+                    </div>
+                        <span class="posts-comment-date">+ еще {{ message.send_repost.post.photo_post.all|slice:"8:"|length }} фото в посте</span>
+                {% endif %}
+
+                    <div class="posts-text">
+                        <p>{{ message.send_repost.post.content }}</p>
+                    </div>
+
+                     {% if request.user in message.send_repost.post.like_post.all %}
+
+                        <div class="unlike-button">
+                            <form method="post">
+                                {% csrf_token %}
+                            <button type="submit" name="submit_button" value="set_unlike_repost">❤&nbsp;&nbsp;{{ message.send_repost.post.like_post.all|length }}</button>
+                                <input type="hidden" name="post_id" value="{{ message.send_repost.post.id }}">
+                            </form>
+                            <p>&nbsp;</p>
+                        </div>
+
+                    {% else %}
+
+                        <div class="like-button">
+                            <form method="post">
+                                {% csrf_token %}
+                            <button type="submit" name="submit_button" value="set_like_repost">❤&nbsp;&nbsp;{{ message.send_repost.post.like_post.all|length }}</button>
+                                <input type="hidden" name="post_id" value="{{ message.send_repost.post.id }}">
+                            </form>
+                            <p>&nbsp;</p>
+
+                        </div>
+
+                    {% endif %}
+
+                    <div class="view-post-b">
+                        <form action="/useradmin/user-{{ message.send_repost.post.author.profile_id }}/post-{{ message.send_repost.post.id }}">
+                            <button class="view-post"><p>➤</p></button>
+                        </form>
+                    </div>
+            </div>
+
+            <br>
+
+            {% endif %}
+
+            {% if message.send_photo %}
+
+            <div class="photo-all-comment">
+            <a href="/useradmin/user-{{ message.send_photo.author.profile_id }}"><img src="{{ message.send_photo.author.avatar.url }}"></a>
+                <div class="photo-comment-user-date">
+                    <a href="/useradmin/user-{{ message.send_photo.author.profile_id }}">{{ message.send_photo.author }}</a>
+                    <span class="photo-comment-date">{{ message.send_photo.date }}</span>
+                </div>
+            </div>
+
+            <div class="message-photo">
+                <div class="message-photo-1">
+                    <a href="/useradmin/user-{{ message.send_photo.author.profile_id }}/photo/show-{{ message.send_photo.id }}">
+                        <img src="{{ message.send_photo.photo.url }}"></a>
+                </div>
+            </div>
+
+            <br>
+
+            {% endif %}
+
+    {% endfor %}
+
+
+    <div class="posts-create">
+
+        <div class="post-button">
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ posts_form.content }}
+            <button id="summbit-button" type="submit" name="submit_button" value="create_message">Отправить</button>
+            <input type="file" name="photo_post" multiple>
+        </form>
+
+        </div>
+
+    </div>
+
+
+{% endblock %}

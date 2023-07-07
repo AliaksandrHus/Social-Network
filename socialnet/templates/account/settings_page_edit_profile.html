@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block menu2 %}
+
+    <div class="menu2">
+        {% if profile.user_admin %}
+    <a href="{% url 'settings_page_admin' %}">АДМИН</a>
+        {% endif %}
+    <a href="{% url 'settings_page_edit_profile' %}">НАСТРОЙКИ</a>
+    <a href="{% url 'logout_page' %}">ВЫХОД</a>
+    </div>
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="standard">
+        <h3>Описание вашего профиля:</h3>
+    </div>
+
+    {% if profile_info %}
+
+    <div class="profile-info">
+        {{ profile_info }}
+    </div>
+
+    {% else %}
+
+    <div class="standard">
+        <p>Ничего нет...</p>
+    </div>
+
+    {% endif %}
+
+    <div class="photo-comment">
+
+        <form method="post">
+            {% csrf_token %}
+            {{ comment_form.comment }}
+            <button type="submit" name="submit_button" value="create_info">Добавить</button>
+        </form>
+
+    </div>
+
+
+{% endblock %}

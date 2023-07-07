@@ -9,6 +9,6 @@ urlpatterns = [
     path('search/', include('search.urls')),
     path('groups/', include('groups.urls')),
     path('messages/', include('usermessages.urls')),
+    path('useradmin/', include('useradmin.urls')),
 
-    # path('admin/', include('useradmin.urls')),
 ]

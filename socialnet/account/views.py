@@ -10,8 +10,8 @@ from django.contrib.auth import authenticate, login, logout
 from .models import Profile, Posts, Photo, PhotoComment, PostsComment, RePosts, RePostsComment
 
 from groups.models import GroupPosts, GroupRePosts, GroupRePostsComment
-from .forms import LoginForm, RegistrationForm, PostsForm, DescriptionPhotoForm, CommentPhotoForm
-from usermessages.models import Dialog
+from .forms import LoginForm, RegistrationForm, PostsForm, DescriptionPhotoForm, CommentPhotoForm, StatusForm
+from usermessages.models import Dialog, Messages
 
 from itertools import chain
 import random
@@ -42,6 +42,8 @@ def index(request):
 def profile_page(request):
 
     """Профиль пользователя"""
+
+    profile_info = ''
 
     if request.method == 'POST':
 
@@ -187,12 +189,34 @@ def profile_page(request):
             comment_delete.delete()
 
     # Кнопка удалить комментарий к репосту группы
-
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 're-comment-delete-group':
 
             comment_id = request.POST['comment_id']
             comment_delete = GroupRePostsComment.objects.get(id=comment_id)
             comment_delete.delete()
+
+    # Кнопка показать информацию
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'show_info':
+
+            profile_info = Profile.objects.get(profile_id=request.user.id).profile_info
+            if not profile_info: return redirect('settings_page_edit_profile')
+
+    # Кнопка создать статус
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_status':
+
+            profile = Profile.objects.get(profile_id=request.user.id)
+            profile.user_status = request.POST['status']
+            profile.save()
+
+    # Кнопка удалить
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'delete_status':
+
+            profile = Profile.objects.get(profile_id=request.user.id)
+            profile.user_status = ''
+            profile.save()
 
     user = f'{request.user.first_name} {request.user.last_name}'
     person = Profile.objects.get(user=request.user.id)
@@ -217,6 +241,9 @@ def profile_page(request):
 
     posts_form = PostsForm
     comment_form = CommentPhotoForm
+    status_form = StatusForm
+
+    status = Profile.objects.get(user=request.user.id).user_status
 
     followers = Profile.objects.get(user=request.user.id).followers.all()
     followers_count = followers.count()
@@ -260,6 +287,9 @@ def profile_page(request):
         'temp_left': temp_left,
         'all_photo_right': all_photo_right,
         'temp_right': temp_right,
+        'profile_info': profile_info,
+        'status_form': status_form,
+        'status': status,
     }
 
     return render(request, 'account/profile_page.html', data)
@@ -496,6 +526,9 @@ def profile_page_post_repost(request, pk_post):
 
     """Страница создания репоста"""
 
+    search_people = []
+    text_search = ''
+
     if request.method == 'POST':
 
     # Кнопка сделать репост
@@ -522,6 +555,83 @@ def profile_page_post_repost(request, pk_post):
             need_post = Posts.objects.get(id=request.POST['post_id'])
             need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
 
+        # Кнопка найти
+
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'start_search':
+            text_search = request.POST['comment']
+
+        # Отправить пост в личку пользователю
+
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'post_send_button':
+
+            active_user = Profile.objects.get(profile_id=request.user.id)
+            target_user = Profile.objects.get(profile_id=request.POST['user_id'])
+
+            dialog = Dialog.objects.filter(user_list=active_user).filter(user_list=target_user).first()
+
+            # Если диалога нет - создаем и переходим
+
+            if not dialog:
+
+                new_dialog = Dialog()
+                new_dialog.creator = active_user
+                new_dialog.save()
+                new_dialog.user_list.add(active_user)
+                new_dialog.user_list.add(target_user)
+
+                message = Messages()
+                message.dialog = Dialog.objects.get(id=new_dialog.id)
+                message.author = Profile.objects.get(profile_id=request.user.id)
+                message.content = ''
+                message.send_post = Posts.objects.get(id=pk_post)
+                message.save()
+
+                dialog = Dialog.objects.get(id=new_dialog.id)
+                dialog.last_message_text = 'Пост пользователя'
+                dialog.last_message_time = message.date
+                dialog.last_message = message
+                dialog.save()
+
+                return redirect('dialog', new_dialog.id)
+
+            # Если диалога есть - переходим
+
+            else:
+
+                message = Messages()
+                message.dialog = Dialog.objects.get(id=dialog.id)
+                message.author = Profile.objects.get(profile_id=request.user.id)
+                message.content = ''
+                message.send_post = Posts.objects.get(id=pk_post)
+                message.save()
+
+                dialog = Dialog.objects.get(id=dialog.id)
+                dialog.last_message_text = 'Пост пользователя'
+                dialog.last_message_time = message.date
+                dialog.last_message = message
+                dialog.save()
+
+                return redirect('dialog', dialog.id)
+
+    # Если запрос состоит из 1 слова
+
+    if len(text_search.split()) == 1:
+
+        search_people += Profile.objects.filter(first_name__iregex=text_search)
+        search_people += Profile.objects.filter(last_name__iregex=text_search)
+        search_people = [person for person in set(search_people) if person.profile_id != request.user.id]
+
+    # Если запрос состоит из 2 слов
+
+    if len(text_search.split()) == 2:
+
+        text_search_list = text_search.split()
+
+        search_people += Profile.objects.filter(first_name__iregex=text_search_list[0], last_name__iregex=text_search_list[1])
+        search_people += Profile.objects.filter(first_name__iregex=text_search_list[1], last_name__iregex=text_search_list[0])
+        search_people = [person for person in set(search_people) if person.profile_id != request.user.id]
+
+
     user = f'{request.user.first_name} {request.user.last_name}'
     comment_form = CommentPhotoForm
     post = Posts.objects.get(id=pk_post)
@@ -535,6 +645,7 @@ def profile_page_post_repost(request, pk_post):
         'user': user,
         'post': post,
         'comment_form': comment_form,
+        'search_people': search_people,
     }
 
     return render(request, 'account/profile_page_create_repost.html', data)
@@ -544,6 +655,9 @@ def profile_page_post_repost(request, pk_post):
 def profile_page_post_group_repost(request, pk_group_post):
 
     """Страница создания репоста"""
+
+    search_people = []
+    text_search = ''
 
     if request.method == 'POST':
 
@@ -563,13 +677,87 @@ def profile_page_post_group_repost(request, pk_group_post):
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like':
 
-            need_post = Posts.objects.get(id=request.POST['post_id'])
+            need_post = GroupPosts.objects.get(id=request.POST['post_id'])
             need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike':
 
-            need_post = Posts.objects.get(id=request.POST['post_id'])
+            need_post = GroupPosts.objects.get(id=request.POST['post_id'])
             need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
+
+        # Кнопка найти
+
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'start_search':
+            text_search = request.POST['comment']
+
+        # Отправить пост в личку пользователю
+
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'post_send_button':
+
+            active_user = Profile.objects.get(profile_id=request.user.id)
+            target_user = Profile.objects.get(profile_id=request.POST['user_id'])
+
+            dialog = Dialog.objects.filter(user_list=active_user).filter(user_list=target_user).first()
+
+            # Если диалога нет - создаем и переходим
+
+            if not dialog:
+
+                new_dialog = Dialog()
+                new_dialog.creator = active_user
+                new_dialog.save()
+                new_dialog.user_list.add(active_user)
+                new_dialog.user_list.add(target_user)
+
+                message = Messages()
+                message.dialog = Dialog.objects.get(id=new_dialog.id)
+                message.author = Profile.objects.get(profile_id=request.user.id)
+                message.content = ''
+                message.send_group_post = GroupPosts.objects.get(id=pk_group_post)
+                message.save()
+
+                dialog = Dialog.objects.get(id=new_dialog.id)
+                dialog.last_message_text = 'Пост пользователя'
+                dialog.last_message_time = message.date
+                dialog.last_message = message
+                dialog.save()
+
+                return redirect('dialog', new_dialog.id)
+
+            # Если диалога есть - переходим
+
+            else:
+
+                message = Messages()
+                message.dialog = Dialog.objects.get(id=dialog.id)
+                message.author = Profile.objects.get(profile_id=request.user.id)
+                message.content = ''
+                message.send_group_post = GroupPosts.objects.get(id=pk_group_post)
+                message.save()
+
+                dialog = Dialog.objects.get(id=dialog.id)
+                dialog.last_message_text = 'Пост группы'
+                dialog.last_message_time = message.date
+                dialog.last_message = message
+                dialog.save()
+
+                return redirect('dialog', dialog.id)
+
+    # Если запрос состоит из 1 слова
+
+    if len(text_search.split()) == 1:
+        search_people += Profile.objects.filter(first_name__iregex=text_search)
+        search_people += Profile.objects.filter(last_name__iregex=text_search)
+        search_people = [person for person in set(search_people) if person.profile_id != request.user.id]
+
+    # Если запрос состоит из 2 слов
+
+    if len(text_search.split()) == 2:
+        text_search_list = text_search.split()
+
+        search_people += Profile.objects.filter(first_name__iregex=text_search_list[0], last_name__iregex=text_search_list[1])
+        search_people += Profile.objects.filter(first_name__iregex=text_search_list[1], last_name__iregex=text_search_list[0])
+        search_people = [person for person in set(search_people) if person.profile_id != request.user.id]
 
     user = f'{request.user.first_name} {request.user.last_name}'
     comment_form = CommentPhotoForm
@@ -584,6 +772,7 @@ def profile_page_post_group_repost(request, pk_group_post):
         'user': user,
         'post': post,
         'comment_form': comment_form,
+        'search_people': search_people,
     }
 
     return render(request, 'account/profile_page_create_repost.html', data)
@@ -843,6 +1032,8 @@ def another_user_page(request, pk):
 
     """Профиль другого пользователя"""
 
+    profile_info = ''
+
     if request.method == 'POST':
 
     # Кнопка подписаться
@@ -966,6 +1157,13 @@ def another_user_page(request, pk):
 
             else: return redirect('dialog', dialog.id)
 
+    # Кнопка показать информацию
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'show_info':
+
+            profile_info = Profile.objects.get(profile_id=pk).profile_info
+            if not profile_info: profile_info = 'Не заполнено...'
+
     if request.user.id != pk:
 
         user = f'{request.user.first_name} {request.user.last_name}'
@@ -1016,6 +1214,8 @@ def another_user_page(request, pk):
 
         comment_form = CommentPhotoForm
 
+        status = Profile.objects.get(user=pk).user_status
+
         not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
         not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
 
@@ -1036,6 +1236,8 @@ def another_user_page(request, pk):
             'all_photo_right': all_photo_right,
             'temp_right': temp_right,
             'comment_form': comment_form,
+            'profile_info': profile_info,
+            'status': status,
         }
 
         return render(request, 'account/another_user_page.html', data)
@@ -1188,19 +1390,9 @@ def another_user_page_group_repost(request, pk, pk_repost):
 
     if request.method == 'POST':
 
-    # Удалить пост
-
-        if 'submit_button' in request.POST and request.POST['submit_button'] == 'posts-delete':
-
-            post_id = request.POST['post_id']
-            post_delete = RePosts.objects.get(id=post_id)
-            post_delete.delete()
-
-            return redirect('profile_page')
-
     # Поставить / отменить лайк
 
-        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like':
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like':
 
             need_post = GroupPosts.objects.get(id=request.POST['post_id'])
             need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
@@ -1258,6 +1450,7 @@ def another_user_page_group_repost(request, pk, pk_repost):
     }
 
     return render(request, 'account/another_user_page_group_repost.html', data)
+
 
 @login_required(login_url='/')
 def another_user_page_followers(request, pk):
@@ -1500,6 +1693,7 @@ def settings_page(request):
     """Страничка настроек / выход"""
 
     user = f'{request.user.first_name} {request.user.last_name}'
+    profile = Profile.objects.get(profile_id=request.user.id)
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
     not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
@@ -1507,10 +1701,50 @@ def settings_page(request):
     data = {
         'not_read_message': not_read_message,
         'title': 'Настройки',
-        'user': user
+        'user': user,
+        'profile': profile,
     }
 
     return render(request, 'account/settings_page.html', data)
+
+
+
+@login_required(login_url='/')
+def settings_page_edit_profile(request):
+
+    """Страничка настроек / выход"""
+
+    if request.method == 'POST':
+
+    # Кнопка создать описание
+
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'create_info':
+
+            profile = Profile.objects.get(profile_id=request.user.id)
+            profile.profile_info = request.POST['comment']
+            profile.save()
+
+    user = f'{request.user.first_name} {request.user.last_name}'
+    profile = Profile.objects.get(profile_id=request.user.id)
+
+    profile_info = profile.profile_info
+
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
+    comment_form = CommentPhotoForm
+
+    data = {
+        'not_read_message': not_read_message,
+        'title': 'Настройки',
+        'user': user,
+        'profile': profile,
+        'profile_info': profile_info,
+        'comment_form': comment_form,
+    }
+
+    return render(request, 'account/settings_page_edit_profile.html', data)
+
 
 
 def login_page(request):
@@ -1592,10 +1826,21 @@ def registration_page(request):
 
         elif registration_form.is_valid() and password == password_confirmation and check_email(email):
 
-            User.objects.create_user(username, email, password, first_name=first_name, last_name=last_name)
+            if User.objects.all().count() == 0:
 
-            user = authenticate(request, username=username, password=password)
-            login(request, user)
+                User.objects.create_user(username='admin', first_name='admin')
+
+                User.objects.create_user(username, email, password, first_name=first_name, last_name=last_name)
+
+                user = authenticate(request, username=username, password=password)
+                login(request, user)
+
+            else:
+
+                User.objects.create_user(username, email, password, first_name=first_name, last_name=last_name)
+
+                user = authenticate(request, username=username, password=password)
+                login(request, user)
 
             return redirect('profile_page')
 
@@ -1631,3 +1876,406 @@ def logout_page(request):
 
     logout(request)
     return redirect('index')
+
+@login_required(login_url='/')
+def profile_page_report_group_post(request, pk_post):
+
+    """Страница создания жалобы на пост группы"""
+
+    if request.method == 'POST':
+
+    # Отправить рапорт
+
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'send_report':
+
+            print(request.POST)
+
+            active_user = Profile.objects.get(profile_id=request.user.id)
+            target_user = Profile.objects.get(profile_id=1)
+
+            dialog = Dialog.objects.filter(user_list=active_user).filter(user_list=target_user).first()
+
+            # Если диалога нет - создаем и переходим
+
+            if not dialog:
+
+                new_dialog = Dialog()
+                new_dialog.creator = active_user
+                new_dialog.save()
+                new_dialog.user_list.add(active_user)
+                new_dialog.user_list.add(target_user)
+
+                message = Messages()
+                message.dialog = Dialog.objects.get(id=new_dialog.id)
+                message.author = Profile.objects.get(profile_id=request.user.id)
+                message.content = request.POST['comment']
+                message.send_group_post = GroupPosts.objects.get(id=pk_post)
+                message.save()
+
+                dialog = Dialog.objects.get(id=new_dialog.id)
+                dialog.last_message_text = str(request.POST['comment'])[:50]
+                if len(dialog.last_message_text) == 50: dialog.last_message_text += '...'
+                dialog.last_message_time = message.date
+                dialog.last_message = message
+                dialog.save()
+
+                return redirect('dialog', new_dialog.id)
+
+            # Если диалога есть - переходим
+
+            else:
+
+                message = Messages()
+                message.dialog = Dialog.objects.get(id=dialog.id)
+                message.author = Profile.objects.get(profile_id=request.user.id)
+                message.content = request.POST['comment']
+                message.send_group_post = GroupPosts.objects.get(id=pk_post)
+                message.save()
+
+                dialog = Dialog.objects.get(id=dialog.id)
+                dialog.last_message_text = str(request.POST['comment'])[:50]
+                if len(dialog.last_message_text) == 50: dialog.last_message_text += '...'
+                dialog.last_message_time = message.date
+                dialog.last_message = message
+                dialog.save()
+
+                return redirect('dialog', dialog.id)
+
+    user = f'{request.user.first_name} {request.user.last_name}'
+    post = GroupPosts.objects.get(id=pk_post)
+    comment_form = CommentPhotoForm
+
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
+    data = {
+        'not_read_message': not_read_message,
+        'user': user,
+        'title': 'Жалоба:',
+        'post': post,
+        'comment_form': comment_form,
+    }
+
+    return render(request, 'account/profile_page_report_group_post.html', data)
+
+
+@login_required(login_url='/')
+def profile_page_report_group_repost(request, pk_post):
+
+    """Страница создания жалобы на репост группы"""
+
+    if request.method == 'POST':
+
+    # Отправить рапорт
+
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'send_report':
+
+            print(request.POST)
+
+            active_user = Profile.objects.get(profile_id=request.user.id)
+            target_user = Profile.objects.get(profile_id=1)
+
+            dialog = Dialog.objects.filter(user_list=active_user).filter(user_list=target_user).first()
+
+            # Если диалога нет - создаем и переходим
+
+            if not dialog:
+
+                new_dialog = Dialog()
+                new_dialog.creator = active_user
+                new_dialog.save()
+                new_dialog.user_list.add(active_user)
+                new_dialog.user_list.add(target_user)
+
+                message = Messages()
+                message.dialog = Dialog.objects.get(id=new_dialog.id)
+                message.author = Profile.objects.get(profile_id=request.user.id)
+                message.content = request.POST['comment']
+                message.send_group_repost = GroupRePosts.objects.get(id=pk_post)
+                message.save()
+
+                dialog = Dialog.objects.get(id=new_dialog.id)
+                dialog.last_message_text = str(request.POST['comment'])[:50]
+                if len(dialog.last_message_text) == 50: dialog.last_message_text += '...'
+                dialog.last_message_time = message.date
+                dialog.last_message = message
+                dialog.save()
+
+                return redirect('dialog', new_dialog.id)
+
+            # Если диалога есть - переходим
+
+            else:
+
+                message = Messages()
+                message.dialog = Dialog.objects.get(id=dialog.id)
+                message.author = Profile.objects.get(profile_id=request.user.id)
+                message.content = request.POST['comment']
+                message.send_group_repost = GroupRePosts.objects.get(id=pk_post)
+                message.save()
+
+                dialog = Dialog.objects.get(id=dialog.id)
+                dialog.last_message_text = str(request.POST['comment'])[:50]
+                if len(dialog.last_message_text) == 50: dialog.last_message_text += '...'
+                dialog.last_message_time = message.date
+                dialog.last_message = message
+                dialog.save()
+
+                return redirect('dialog', dialog.id)
+
+    user = f'{request.user.first_name} {request.user.last_name}'
+    post = GroupRePosts.objects.get(id=pk_post)
+    comment_form = CommentPhotoForm
+
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
+    data = {
+        'not_read_message': not_read_message,
+        'user': user,
+        'title': 'Жалоба:',
+        'post': post,
+        'comment_form': comment_form,
+    }
+
+    return render(request, 'account/profile_page_report_group_post.html', data)
+
+
+@login_required(login_url='/')
+def profile_page_report_post(request, pk_post):
+
+    """Страница создания жалобы на пост группы"""
+
+    if request.method == 'POST':
+
+    # Отправить рапорт
+
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'send_report':
+
+            active_user = Profile.objects.get(profile_id=request.user.id)
+            target_user = Profile.objects.get(profile_id=1)
+
+            dialog = Dialog.objects.filter(user_list=active_user).filter(user_list=target_user).first()
+
+            # Если диалога нет - создаем и переходим
+
+            if not dialog:
+
+                new_dialog = Dialog()
+                new_dialog.creator = active_user
+                new_dialog.save()
+                new_dialog.user_list.add(active_user)
+                new_dialog.user_list.add(target_user)
+
+                message = Messages()
+                message.dialog = Dialog.objects.get(id=new_dialog.id)
+                message.author = Profile.objects.get(profile_id=request.user.id)
+                message.content = request.POST['comment']
+                message.send_post = Posts.objects.get(id=pk_post)
+                message.save()
+
+                dialog = Dialog.objects.get(id=new_dialog.id)
+                dialog.last_message_text = str(request.POST['comment'])[:50]
+                if len(dialog.last_message_text) == 50: dialog.last_message_text += '...'
+                dialog.last_message_time = message.date
+                dialog.last_message = message
+                dialog.save()
+
+                return redirect('dialog', new_dialog.id)
+
+            # Если диалога есть - переходим
+
+            else:
+
+                message = Messages()
+                message.dialog = Dialog.objects.get(id=dialog.id)
+                message.author = Profile.objects.get(profile_id=request.user.id)
+                message.content = request.POST['comment']
+                message.send_post = Posts.objects.get(id=pk_post)
+                message.save()
+
+                dialog = Dialog.objects.get(id=dialog.id)
+                dialog.last_message_text = str(request.POST['comment'])[:50]
+                if len(dialog.last_message_text) == 50: dialog.last_message_text += '...'
+                dialog.last_message_time = message.date
+                dialog.last_message = message
+                dialog.save()
+
+                return redirect('dialog', dialog.id)
+
+    user = f'{request.user.first_name} {request.user.last_name}'
+    post = Posts.objects.get(id=pk_post)
+    comment_form = CommentPhotoForm
+
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
+    data = {
+        'not_read_message': not_read_message,
+        'user': user,
+        'title': 'Жалоба:',
+        'post': post,
+        'comment_form': comment_form,
+    }
+
+    return render(request, 'account/profile_page_report_group_post.html', data)
+
+
+@login_required(login_url='/')
+def profile_page_report_repost(request, pk_post):
+
+    """Страница создания жалобы на пост группы"""
+
+    if request.method == 'POST':
+
+    # Отправить рапорт
+
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'send_report':
+
+            active_user = Profile.objects.get(profile_id=request.user.id)
+            target_user = Profile.objects.get(profile_id=1)
+
+            dialog = Dialog.objects.filter(user_list=active_user).filter(user_list=target_user).first()
+
+            # Если диалога нет - создаем и переходим
+
+            if not dialog:
+
+                new_dialog = Dialog()
+                new_dialog.creator = active_user
+                new_dialog.save()
+                new_dialog.user_list.add(active_user)
+                new_dialog.user_list.add(target_user)
+
+                message = Messages()
+                message.dialog = Dialog.objects.get(id=new_dialog.id)
+                message.author = Profile.objects.get(profile_id=request.user.id)
+                message.content = request.POST['comment']
+                message.send_repost = RePosts.objects.get(id=pk_post)
+                message.save()
+
+                dialog = Dialog.objects.get(id=new_dialog.id)
+                dialog.last_message_text = str(request.POST['comment'])[:50]
+                if len(dialog.last_message_text) == 50: dialog.last_message_text += '...'
+                dialog.last_message_time = message.date
+                dialog.last_message = message
+                dialog.save()
+
+                return redirect('dialog', new_dialog.id)
+
+            # Если диалога есть - переходим
+
+            else:
+
+                message = Messages()
+                message.dialog = Dialog.objects.get(id=dialog.id)
+                message.author = Profile.objects.get(profile_id=request.user.id)
+                message.content = request.POST['comment']
+                message.send_repost = RePosts.objects.get(id=pk_post)
+                message.save()
+
+                dialog = Dialog.objects.get(id=dialog.id)
+                dialog.last_message_text = str(request.POST['comment'])[:50]
+                if len(dialog.last_message_text) == 50: dialog.last_message_text += '...'
+                dialog.last_message_time = message.date
+                dialog.last_message = message
+                dialog.save()
+
+                return redirect('dialog', dialog.id)
+
+    user = f'{request.user.first_name} {request.user.last_name}'
+    post = RePosts.objects.get(id=pk_post)
+    comment_form = CommentPhotoForm
+
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
+    data = {
+        'not_read_message': not_read_message,
+        'user': user,
+        'title': 'Жалоба:',
+        'post': post,
+        'comment_form': comment_form,
+    }
+
+    return render(request, 'account/profile_page_report_group_post.html', data)
+
+
+@login_required(login_url='/')
+def profile_page_report_photo(request, pk_post):
+
+    """Страница создания жалобы на пост группы"""
+
+    if request.method == 'POST':
+
+    # Отправить рапорт
+
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'send_report':
+
+            active_user = Profile.objects.get(profile_id=request.user.id)
+            target_user = Profile.objects.get(profile_id=1)
+
+            dialog = Dialog.objects.filter(user_list=active_user).filter(user_list=target_user).first()
+
+            # Если диалога нет - создаем и переходим
+
+            if not dialog:
+
+                new_dialog = Dialog()
+                new_dialog.creator = active_user
+                new_dialog.save()
+                new_dialog.user_list.add(active_user)
+                new_dialog.user_list.add(target_user)
+
+                message = Messages()
+                message.dialog = Dialog.objects.get(id=new_dialog.id)
+                message.author = Profile.objects.get(profile_id=request.user.id)
+                message.content = request.POST['comment']
+                message.send_photo = Photo.objects.get(id=pk_post)
+                message.save()
+
+                dialog = Dialog.objects.get(id=new_dialog.id)
+                dialog.last_message_text = str(request.POST['comment'])[:50]
+                if len(dialog.last_message_text) == 50: dialog.last_message_text += '...'
+                dialog.last_message_time = message.date
+                dialog.last_message = message
+                dialog.save()
+
+                return redirect('dialog', new_dialog.id)
+
+            # Если диалога есть - переходим
+
+            else:
+
+                message = Messages()
+                message.dialog = Dialog.objects.get(id=dialog.id)
+                message.author = Profile.objects.get(profile_id=request.user.id)
+                message.content = request.POST['comment']
+                message.send_photo = Photo.objects.get(id=pk_post)
+                message.save()
+
+                dialog = Dialog.objects.get(id=dialog.id)
+                dialog.last_message_text = str(request.POST['comment'])[:50]
+                if len(dialog.last_message_text) == 50: dialog.last_message_text += '...'
+                dialog.last_message_time = message.date
+                dialog.last_message = message
+                dialog.save()
+
+                return redirect('dialog', dialog.id)
+
+    user = f'{request.user.first_name} {request.user.last_name}'
+    post = Photo.objects.get(id=pk_post)
+    comment_form = CommentPhotoForm
+
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
+    data = {
+        'not_read_message': not_read_message,
+        'user': user,
+        'title': 'Жалоба:',
+        'post': post,
+        'comment_form': comment_form,
+    }
+
+    return render(request, 'account/profile_page_report_group_post.html', data)

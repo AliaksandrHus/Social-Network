@@ -24,8 +24,7 @@ class RegistrationForm(forms.Form):
 class PostsForm(forms.Form):
 
     """Форма создания поста в ленте профиля"""
-    # photos = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
-    # photos = forms.MultipleChoiceField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
+
     content = forms.CharField(required=False, label='', widget=forms.Textarea(attrs={'placeholder': '',
                                                                      'rows': 1,
                                                                      'class': 'post-create-textarea'}))
@@ -47,3 +46,12 @@ class CommentPhotoForm(forms.Form):
     comment = forms.CharField(label='', widget=forms.Textarea(attrs={'placeholder': '',
                                                                      'rows': 1,
                                                                      'class': 'comment-photo-textarea'}))
+
+
+class StatusForm(forms.Form):
+
+    """Форма создания статуса"""
+
+    status = forms.CharField(label='', widget=forms.Textarea(attrs={'placeholder': '',
+                                                                     'rows': 1,
+                                                                     'class': 'status-textarea'}))

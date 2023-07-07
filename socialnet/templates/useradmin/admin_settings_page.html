@@ -1,0 +1,23 @@
+{% extends 'base-useradmin.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block menu2 %}
+
+    <div class="menu2">
+        {% if profile.user_admin %}
+    <a href="{% url 'settings_page' %}">АДМИН</a>
+        {% endif %}
+    <a href="">НАСТРОЙКИ</a>
+    <a href="{% url 'logout_page' %}">ВЫХОД</a>
+    </div>
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="standard">
+    </div>
+
+{% endblock %}

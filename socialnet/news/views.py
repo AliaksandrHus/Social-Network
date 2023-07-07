@@ -9,6 +9,7 @@ from account.models import Profile, Posts, PostsComment, RePosts, RePostsComment
 from account.forms import CommentPhotoForm
 
 from itertools import chain
+import random
 
 
 @login_required(login_url='/')
@@ -163,6 +164,45 @@ def news(request):
             target_post.comments = reversed(
                 GroupRePostsComment.objects.filter(reposts=target_post).order_by('-date')[:3])
 
+    # Создаем список случайных новостей
+
+    randon_post_and_repost = []
+
+
+    posts = Posts.objects.all()
+    reposts = RePosts.objects.all()
+
+    group_posts = GroupPosts.objects.all()
+    group_reposts = GroupRePosts.objects.all()
+
+    randon_post_and_repost += sorted(chain(posts, reposts, group_posts, group_reposts), key=lambda x: x.date, reverse=True)
+    randon_post_and_repost = [post for post in randon_post_and_repost if post.author.user != request.user]
+
+    randon_post_and_repost = sorted(randon_post_and_repost, key=lambda x: x.date, reverse=True)
+
+    # Добавить 3 последних комментария к постам и репостам
+
+    for target_post in randon_post_and_repost:
+
+        if type(target_post) == Posts:
+            target_post.comments = reversed(
+                PostsComment.objects.filter(posts=target_post).order_by('-date')[:3])
+
+        elif type(target_post) == RePosts:
+            target_post.comments = reversed(
+                RePostsComment.objects.filter(reposts=target_post).order_by('-date')[:3])
+
+        elif type(target_post) == GroupPosts:
+            comments_user = GroupPostsComment.objects.filter(posts=target_post)
+            comments_author = GroupPostsCommentAuthor.objects.filter(posts=target_post)
+            target_post.comments = list(sorted(chain(comments_user, comments_author), key=lambda x: x.date))[-3:]
+
+        elif type(target_post) == GroupRePosts:
+            target_post.comments = reversed(
+                GroupRePostsComment.objects.filter(reposts=target_post).order_by('-date')[:3])
+
+    random.shuffle(randon_post_and_repost)
+
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
     not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
 
@@ -171,6 +211,7 @@ def news(request):
         'title': 'Новости',
         'user': user,
         'post_and_repost': post_and_repost,
+        'randon_post_and_repost': randon_post_and_repost[:10],
         'comment_form': comment_form,
     }
 

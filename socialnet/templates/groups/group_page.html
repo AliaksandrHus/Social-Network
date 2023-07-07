@@ -1,4 +1,4 @@
-{% extends 'account/base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}{{ title }}{% endblock %}
@@ -170,25 +170,108 @@
 
     {% endif %}
 
+    {% if group_info %}
+
+    <div class="profile-info">
+        <h3>Описание вашего профиля:</h3>
+            {{ group_info }}
+    </div>
+
+        {% if group.user == request.user or request.user.id in team %}
+
+        <div class="photo-comment">
+
+            <form method="post">
+                {% csrf_token %}
+                {{ comment_form.comment }}
+                <button type="submit" name="submit_button" value="create_info">Добавить</button>
+            </form>
+
+        </div>
+
+        {% endif %}
+
+    <div class="add_message_info">
+
         {% if follower %}
 
-    <div class="unfollow-button">
-        <form method="post">
-            {% csrf_token %}
-        <button type="submit" name="submit_button" value="unfollow">Отменить подписку</button>
-        </form>
-    </div>
+            <div class="unfollow-btn">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="unfollow">Отписка</button>
+                </form>
+            </div>
 
         {% else %}
 
-    <div class="follow-button">
-        <form method="post">
-            {% csrf_token %}
-        <button type="submit" name="submit_button" value="follow">Подписаться</button>
-        </form>
-    </div>
+            <div class="follow-btn">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="follow">Подписка</button>
+                </form>
+            </div>
 
         {% endif %}
+
+
+            <div class="message-btn">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="send_message">Сообщение</button>
+                </form>
+            </div>
+
+            <div class="info-btn-close">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="close_info">О группе</button>
+                </form>
+            </div>
+    </div>
+
+    {% else %}
+
+    <div class="add_message_info">
+
+        {% if follower %}
+
+            <div class="unfollow-btn">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="unfollow">Отписка</button>
+                </form>
+            </div>
+
+        {% else %}
+
+            <div class="follow-btn">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="follow">Подписка</button>
+                </form>
+            </div>
+
+        {% endif %}
+
+
+            <div class="message-btn">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="send_message">Сообщение</button>
+                </form>
+            </div>
+
+            <div class="info-btn">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="show_info">О группе</button>
+                </form>
+            </div>
+    </div>
+
+    {% endif %}
+
+    <br>
 
     {% if group.user == request.user or request.user.id in team %}
 
