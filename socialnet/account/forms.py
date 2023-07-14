@@ -1,4 +1,5 @@
 from django import forms
+from django.core.validators import MaxLengthValidator
 
 
 class LoginForm(forms.Form):
@@ -6,7 +7,7 @@ class LoginForm(forms.Form):
     """Форма логирования"""
 
     username = forms.CharField(label='', widget=forms.TextInput(attrs={'placeholder': 'Введите email'}))
-    password = forms.CharField(label='', widget=forms.TextInput(attrs={'placeholder': 'Введите пароль'}))
+    password = forms.CharField(label='', widget=forms.PasswordInput(attrs={'placeholder': 'Введите пароль'}))
 
 
 class RegistrationForm(forms.Form):
@@ -17,8 +18,8 @@ class RegistrationForm(forms.Form):
     last_name = forms.CharField(label='', widget=forms.TextInput(attrs={'placeholder': 'Введите фамилия'}))
 
     email = forms.CharField(label='', widget=forms.TextInput(attrs={'placeholder': 'Введите почту'}))
-    password = forms.CharField(label='', widget=forms.TextInput(attrs={'placeholder': 'Введите пароль'}))
-    password_confirmation = forms.CharField(label='', widget=forms.TextInput(attrs={'placeholder': 'Повторите пароль'}))
+    password = forms.CharField(label='', widget=forms.PasswordInput(attrs={'placeholder': 'Введите пароль'}))
+    password_confirmation = forms.CharField(label='', widget=forms.PasswordInput(attrs={'placeholder': 'Введите пароль'}))
 
 
 class PostsForm(forms.Form):
@@ -55,3 +56,14 @@ class StatusForm(forms.Form):
     status = forms.CharField(label='', widget=forms.Textarea(attrs={'placeholder': '',
                                                                      'rows': 1,
                                                                      'class': 'status-textarea'}))
+
+
+class SecurityCode(forms.Form):
+
+    """Форма ввода кода подтверждения"""
+
+    code = forms.CharField(label='', widget=forms.Textarea(attrs={'placeholder': '',
+                                                                   'rows': 1,
+                                                                   'class': 'security-code'}),
+                                                                    max_length=4)
+

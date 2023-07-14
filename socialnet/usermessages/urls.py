@@ -8,6 +8,9 @@ urlpatterns = [
     path('', views.all_messages, name='all_messages'),
     path('dialog-<int:dialog_id>', views.dialog, name='dialog'),
 
+    path('check_new_messages', views.unread_messages, name='check_new_messages'),
+
+
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

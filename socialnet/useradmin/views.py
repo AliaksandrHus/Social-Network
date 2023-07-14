@@ -25,6 +25,8 @@ def settings_page(request):
 
     """Страничка настроек / выход"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     user = f'{request.user.first_name} {request.user.last_name}'
     profile = Profile.objects.get(profile_id=request.user.id)
 
@@ -45,6 +47,8 @@ def settings_page(request):
 def admin_search(request):
 
     """Страница поиска"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     user = f'{request.user.first_name} {request.user.last_name}'
     comment_form = CommentPhotoForm
@@ -75,6 +79,8 @@ def admin_search(request):
 def admin_search_result(request, text_search):
 
     """Страница общий результат поиска"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     if request.method == 'POST':
 
@@ -250,6 +256,8 @@ def admin_search_result_people(request, text_search):
 
     """Страница результат поиска профилей"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if request.method == 'POST':
 
     # Кнопка найти
@@ -302,6 +310,8 @@ def admin_search_result_group(request, text_search):
 
     """Страница результат поиска групп"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if request.method == 'POST':
 
     # Кнопка найти
@@ -335,6 +345,8 @@ def admin_search_result_group(request, text_search):
 def admin_another_user_page(request, pk):
 
     """Профиль другого пользователя"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     if request.method == 'POST':
 
@@ -401,6 +413,23 @@ def admin_another_user_page(request, pk):
             need_person = Profile.objects.get(profile_id=pk)
             need_person.user_admin = False
             need_person.save()
+
+    # Кнопка заблокировать пользователя
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'block':
+
+            need_person = Profile.objects.get(profile_id=pk)
+            need_person.block = True
+            need_person.save()
+
+    # Кнопка разблокировать пользователя
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'unblock':
+
+            need_person = Profile.objects.get(profile_id=pk)
+            need_person.block = False
+            need_person.save()
+
 
     if request.user.id != pk:
 
@@ -484,6 +513,8 @@ def admin_another_user_page_followers(request, pk):
 
     """Страница подписчиков других профилей"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     user = f'{request.user.first_name} {request.user.last_name}'
     user_id = request.user
 
@@ -513,6 +544,8 @@ def admin_another_user_page_followers(request, pk):
 def admin_another_user_page_following(request, pk):
 
     """Страница подписок других профилей"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     user = f'{request.user.first_name} {request.user.last_name}'
     user_id = request.user
@@ -544,6 +577,8 @@ def admin_another_user_page_photo(request, pk):
 
     """Страница фотоальбом других профилей"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     user = f'{request.user.first_name} {request.user.last_name}'
     person = get_object_or_404(Profile, user=pk)  # профиль другого user
     photo_all = Photo.objects.filter(author__user=person.user).order_by('-date')
@@ -569,12 +604,14 @@ def admin_another_user_page_photo_show(request, pk, pk_photo):
 
     """Страница просмотра фото других профилей"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if pk == request.user.id: return redirect('profile_page_photo_show', pk_photo)
 
     user = f'{request.user.first_name} {request.user.last_name}'
     person = get_object_or_404(Profile, user=pk)
     photo_all = Photo.objects.filter(author__user=person.user).order_by('-date')
-    photo_single = Photo.objects.get(id=pk_photo)
+    photo_single = get_object_or_404(Photo, id=pk_photo)
 
     check_like = photo_single.like.filter(username=request.user.username).exists()  # проверка лайка
     count_like = photo_single.like.count()
@@ -675,6 +712,8 @@ def admin_another_user_page_post(request, pk, pk_post):
 
     """Просмотр поста другого пользователя"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if pk == request.user.id: return redirect('profile_page_post', pk_post)
 
     if request.method == 'POST':
@@ -699,7 +738,8 @@ def admin_another_user_page_post(request, pk, pk_post):
 
     user = f'{request.user.first_name} {request.user.last_name}'
     comment_form = CommentPhotoForm
-    post = Posts.objects.get(id=pk_post)
+
+    post = get_object_or_404(Posts, id=pk_post)
     all_comment = PostsComment.objects.filter(posts=post)
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=1).filter(last_message__read=False)
@@ -721,6 +761,8 @@ def admin_another_user_page_post(request, pk, pk_post):
 def admin_another_user_page_repost(request, pk, pk_repost):
 
     """Просмотр репоста другого пользователя"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     if request.method == 'POST':
 
@@ -744,7 +786,7 @@ def admin_another_user_page_repost(request, pk, pk_repost):
 
     user = f'{request.user.first_name} {request.user.last_name}'
     comment_form = CommentPhotoForm
-    repost = RePosts.objects.get(id=pk_repost)
+    repost = get_object_or_404(RePosts, id=pk_repost)
     all_comment = RePostsComment.objects.filter(reposts=repost)
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=1).filter(last_message__read=False)
@@ -766,6 +808,8 @@ def admin_another_user_page_repost(request, pk, pk_repost):
 def admin_another_user_page_group_repost(request, pk, pk_repost):
 
     """Просмотр своего репоста"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     if request.method == 'POST':
 
@@ -789,7 +833,7 @@ def admin_another_user_page_group_repost(request, pk, pk_repost):
 
     user = f'{request.user.first_name} {request.user.last_name}'
     comment_form = CommentPhotoForm
-    repost = GroupRePosts.objects.get(id=pk_repost)
+    repost = get_object_or_404(GroupRePosts, id=pk_repost)
     all_comment = GroupRePostsComment.objects.filter(reposts=repost)
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=1).filter(last_message__read=False)
@@ -809,6 +853,8 @@ def admin_another_user_page_group_repost(request, pk, pk_repost):
 
 @login_required(login_url='/')
 def admin_group_view(request, group_id):
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     if request.method == 'POST':
 
@@ -847,7 +893,7 @@ def admin_group_view(request, group_id):
     temp_right = [None for _ in range(6 - len(all_photo_right))]
 
     user = f'{request.user.first_name} {request.user.last_name}'
-    group = Group.objects.get(profile_id=group_id)
+    group = get_object_or_404(Group, profile_id=group_id)
 
     posts_form = PostsForm
     comment_form = CommentPhotoForm
@@ -923,6 +969,8 @@ def admin_group_followers(request, group_id):
 
     """Страница подписчиков других профилей"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     user = f'{request.user.first_name} {request.user.last_name}'
     user_id = request.user
 
@@ -950,6 +998,8 @@ def admin_group_followers(request, group_id):
 
 @login_required(login_url='/')
 def admin_groups_post(request, group_id, pk_post):
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     if request.method == 'POST':
 
@@ -980,9 +1030,9 @@ def admin_groups_post(request, group_id, pk_post):
             comment_delete.delete()
 
     user = f'{request.user.first_name} {request.user.last_name}'
-    group = Group.objects.get(profile_id=group_id)
+    group = get_object_or_404(Group, profile_id=group_id)
     comment_form = CommentPhotoForm
-    post = GroupPosts.objects.get(id=pk_post)
+    post = get_object_or_404(GroupPosts, id=pk_post)
 
     comments_user = GroupPostsComment.objects.filter(posts=post)
     comments_author = GroupPostsCommentAuthor.objects.filter(posts=post)
@@ -1009,8 +1059,10 @@ def admin_groups_post(request, group_id, pk_post):
 @login_required(login_url='/')
 def admin_groups_photo(request, group_id):
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     user = f'{request.user.first_name} {request.user.last_name}'
-    group = Group.objects.get(profile_id=group_id)
+    group = get_object_or_404(Group, profile_id=group_id)
     photo_all = GroupPhoto.objects.filter(author=group).order_by('-date')
     photo_tot = photo_all.count()
 
@@ -1034,11 +1086,13 @@ def admin_groups_photo_show(request, group_id, pk_photo):
 
     """Страница просмотра фото активного пользователя"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     user = f'{request.user.first_name} {request.user.last_name}'
-    group = Group.objects.get(profile_id=group_id)
+    group = get_object_or_404(Group, profile_id=group_id)
     photo_all = GroupPhoto.objects.filter(author=group_id)
     photo_count = len(photo_all)
-    photo_single = GroupPhoto.objects.get(id=pk_photo)
+    photo_single = get_object_or_404(GroupPhoto, id=pk_photo)
 
     # Слайдер на странице фотографий
 
@@ -1140,7 +1194,17 @@ def dialog_all(request):
 
     """Страница всех сообщений админа"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     user = f'{request.user.first_name} {request.user.last_name}'
+
+    all_dialogs = Dialog.objects.filter(user_list=Profile.objects.get(profile_id=1)).order_by('-last_message_time')
+
+    for dialog in all_dialogs:
+        if not Messages.objects.filter(dialog=dialog.id).exists():
+            dialog_to_del = Dialog.objects.get(id=dialog.id)
+            dialog_to_del.delete()
+
     all_dialogs = Dialog.objects.filter(user_list=Profile.objects.get(profile_id=1)).order_by('-last_message_time')
 
     for target_dialog in all_dialogs:
@@ -1167,6 +1231,8 @@ def admin_dialog(request, dialog_id):
 
     """Страница диалог с админом"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     start_slice = -10
 
     if request.method == 'POST':
@@ -1185,7 +1251,7 @@ def admin_dialog(request, dialog_id):
                 message.content = request.POST['content']
                 message.save()
 
-                dialog = Dialog.objects.get(id=dialog_id)
+                dialog = get_object_or_404(Dialog, id=dialog_id)
 
                 if message.content == '' and request.FILES: dialog.last_message_text = 'Фото'
                 else: dialog.last_message_text = str(request.POST['content'])[:50]
@@ -1304,9 +1370,17 @@ def admin_dialog(request, dialog_id):
             message.read = True
             message.save()
 
-    messages_all = list(Messages.objects.filter(dialog=dialog_id).order_by('date'))
+    all_dialogs = Dialog.objects.filter(user_list=Profile.objects.get(profile_id=1)).order_by('-last_message_time')
 
+    for target_dialog in all_dialogs:
+
+        target_dialog.another_user = \
+            [profile for profile in target_dialog.user_list.all() if profile.profile_id != 1][0]
+
+    messages_all = list(Messages.objects.filter(dialog=dialog_id).order_by('date'))
     messages = list(messages_all)[start_slice:]
+
+    another_user = Dialog.objects.get(id=dialog_id).user_list.exclude(profile_id=1).first()
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=1).filter(last_message__read=False)
     not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != 1])
@@ -1319,6 +1393,8 @@ def admin_dialog(request, dialog_id):
         'posts_form': posts_form,
         'comment_form': comment_form,
         'start_slice': start_slice,
+        'all_dialogs': all_dialogs,
+        'another_user': another_user,
     }
 
     return render(request, 'useradmin/admin_single_dialog.html', data)

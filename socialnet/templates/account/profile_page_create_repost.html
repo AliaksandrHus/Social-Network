@@ -32,7 +32,7 @@
 
                 <form method="post">
                     {% csrf_token %}
-                    <button class="delete-comment" type="submit" name="submit_button" value="post_send_button">↩</button>
+                    <button class="create-repost-short" type="submit" name="submit_button" value="post_send_button">↩</button>
                         <input type="hidden" name="user_id" value="{{ people.profile_id }}">
                 </form>
 

@@ -14,6 +14,11 @@
         {% if person.user_admin %}
             <span>&nbsp;Admin&nbsp;</span>
         {% endif %}
+
+        {% if person.block %}
+            <span>&nbsp;ПОЛЬЗОВАТЕЛЬ ЗАБЛОКИРОВАН&nbsp;</span>
+        {% endif %}
+
     </div>
 
      <div class="followers-following-container">
@@ -112,12 +117,25 @@
 
     <div class="admin-block">
 
+        {% if person.block %}
+
             <div class="block-btn">
                 <form method="post">
                     {% csrf_token %}
-                <button type="submit" name="submit_button" value="">+ block</button>
+                <button type="submit" name="submit_button" value="unblock">unblock</button>
                 </form>
             </div>
+
+        {% else %}
+
+            <div class="block-btn">
+                <form method="post">
+                    {% csrf_token %}
+                <button type="submit" name="submit_button" value="block">block</button>
+                </form>
+            </div>
+
+        {% endif %}
 
         {% if person.user_admin %}
 

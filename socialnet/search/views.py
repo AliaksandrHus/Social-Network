@@ -7,16 +7,20 @@ from usermessages.models import Dialog
 
 from groups.models import Group, GroupPosts, GroupRePosts, GroupPostsComment, GroupRePostsComment, GroupPostsCommentAuthor
 
-from account.models import Profile, Posts, PostsComment, RePosts, RePostsComment
+from account.models import Profile, Posts, PostsComment, RePosts, RePostsComment, Notification
 from account.forms import CommentPhotoForm
 
 from itertools import chain
+
+from django.contrib.contenttypes.models import ContentType
 
 
 @login_required(login_url='/')
 def search(request):
 
     """Страница поиска"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     user = f'{request.user.first_name} {request.user.last_name}'
     comment_form = CommentPhotoForm
@@ -49,6 +53,8 @@ def search_result(request, text_search):
 
     """Страница общий результат поиска"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if request.method == 'POST':
 
     # Кнопка найти
@@ -65,6 +71,15 @@ def search_result(request, text_search):
             pk = request.POST['user_id']
             person = Profile.objects.get(profile_id=request.user.id)
             person.follow(Profile.objects.get(profile_id=pk))
+
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=pk)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- потзователь подпиcался на вас!'
+            new_notification.type_object = 'follow'
+            new_notification.object_id = pk
+            new_notification.content_type = ContentType.objects.get_for_model(Profile)
+            new_notification.save()
 
     # Кнопка отменить подписку
 
@@ -86,6 +101,17 @@ def search_result(request, text_search):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
+            need_post = Posts.objects.get(id=request.POST['post_id'])
+
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=need_post.author.profile_id)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- добавил комментарий к вашему посту!'
+            new_notification.type_object = 'post_comment'
+            new_notification.object_id = request.POST['post_id']
+            new_notification.content_type = ContentType.objects.get_for_model(Posts)
+            new_notification.save()
+
     # Добавить комментарий к посту группы
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment_group':
@@ -104,6 +130,17 @@ def search_result(request, text_search):
 
             need_post = Posts.objects.get(id=request.POST['post_id'])
             need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
+
+            if need_post.author.profile_id != request.user.id:
+
+                new_notification = Notification()
+                new_notification.from_user = Profile.objects.get(profile_id=need_post.author.profile_id)
+                new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+                new_notification.message = '- пользователю понравился ваш пост!'
+                new_notification.type_object = 'post_like'
+                new_notification.object_id = request.POST['post_id']
+                new_notification.content_type = ContentType.objects.get_for_model(Posts)
+                new_notification.save()
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike':
 
@@ -158,6 +195,17 @@ def search_result(request, text_search):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
+            need_repost = RePosts.objects.get(id=request.POST['post_id'])
+
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=need_repost.author.profile_id)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- добавил комментарий к вашему репосту!'
+            new_notification.type_object = 'repost_comment'
+            new_notification.object_id = request.POST['post_id']
+            new_notification.content_type = ContentType.objects.get_for_model(RePosts)
+            new_notification.save()
+
     # Кнопка удалить комментарий к репосту
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 're-comment-delete':
@@ -177,6 +225,17 @@ def search_result(request, text_search):
             new_comment.author = Profile.objects.get(profile_id=request.user.id)
             new_comment.comment = request.POST['comment']
             new_comment.save()
+
+            need_repost = GroupRePosts.objects.get(pk=request.POST['post_id'])
+
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=need_repost.author.profile_id)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- добавил комментарий к вашему репосту группы!'
+            new_notification.type_object = 'group_repost_comment'
+            new_notification.object_id = request.POST['post_id']
+            new_notification.content_type = ContentType.objects.get_for_model(GroupRePosts)
+            new_notification.save()
 
     user = f'{request.user.first_name} {request.user.last_name}'
     i_following = Profile.objects.get(user=request.user.id).following.all()
@@ -280,6 +339,8 @@ def search_result_people(request, text_search):
 
     """Страница результат поиска профилей"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if request.method == 'POST':
 
     # Кнопка найти
@@ -296,6 +357,15 @@ def search_result_people(request, text_search):
             pk = request.POST['user_id']
             person = Profile.objects.get(profile_id=request.user.id)
             person.follow(Profile.objects.get(profile_id=pk))
+
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=pk)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- потзователь подпиcался на вас!'
+            new_notification.type_object = 'follow'
+            new_notification.object_id = pk
+            new_notification.content_type = ContentType.objects.get_for_model(Profile)
+            new_notification.save()
 
     # Кнопка отменить подписку
 
@@ -347,6 +417,8 @@ def search_result_people(request, text_search):
 def search_result_group(request, text_search):
 
     """Страница результат поиска групп"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     if request.method == 'POST':
 

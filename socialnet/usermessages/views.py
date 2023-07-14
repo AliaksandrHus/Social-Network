@@ -3,18 +3,15 @@ from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404
 
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
 
-from account.models import Profile, Posts, Photo, PhotoComment, PostsComment, RePosts, RePostsComment
-from account.forms import LoginForm, RegistrationForm, PostsForm, DescriptionPhotoForm, CommentPhotoForm
+from account.models import Profile, Posts, Notification
+from account.forms import PostsForm, CommentPhotoForm
 from .models import Dialog, Messages, MessagePhoto
-from groups.models import GroupPosts, GroupRePosts, GroupRePostsComment
+from groups.models import GroupPosts
 
+from django.contrib.contenttypes.models import ContentType
 
-from itertools import chain
-import random
-import re
+from django.http import JsonResponse
 
 
 @login_required(login_url='/')
@@ -22,7 +19,17 @@ def all_messages(request):
 
     """Страница всех сообщений пользователя"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     user = f'{request.user.first_name} {request.user.last_name}'
+
+    all_dialogs = Dialog.objects.filter(user_list=Profile.objects.get(profile_id=request.user.id)).order_by('-last_message_time')
+
+    for dialog in all_dialogs:
+        if not Messages.objects.filter(dialog=dialog.id).exists():
+            dialog_to_del = Dialog.objects.get(id=dialog.id)
+            dialog_to_del.delete()
+
     all_dialogs = Dialog.objects.filter(user_list=Profile.objects.get(profile_id=request.user.id)).order_by('-last_message_time')
 
     for target_dialog in all_dialogs:
@@ -48,6 +55,8 @@ def dialog(request, dialog_id):
 
     """Страница диалог с другим пользователем"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     start_slice = -10
 
     if request.method == 'POST':
@@ -66,7 +75,7 @@ def dialog(request, dialog_id):
                 message.content = request.POST['content']
                 message.save()
 
-                dialog = Dialog.objects.get(id=dialog_id)
+                dialog = get_object_or_404(Dialog, id=dialog_id)
 
                 if message.content == '' and request.FILES: dialog.last_message_text = 'Фото'
                 else: dialog.last_message_text = str(request.POST['content'])[:50]
@@ -99,7 +108,7 @@ def dialog(request, dialog_id):
 
             # Если сообщение не последнее в спике
 
-            if message_id != Messages.objects.latest('date').id:
+            if message_id != Messages.objects.filter(dialog=dialog_id).last().id:
 
                 message_id = Messages.objects.get(id=message_id)
                 message_id.delete()
@@ -110,18 +119,20 @@ def dialog(request, dialog_id):
 
                 message_id = Messages.objects.get(id=message_id)
                 message_id.delete()
-                message = Messages.objects.latest('date')
 
-                dialog = Dialog.objects.get(id=dialog_id)
-                dialog.last_message_text = message.content[:50]
-                print(dialog.last_message_text,'-----')
-                dialog.last_message = message
+                if Messages.objects.filter(dialog=dialog_id).exists():
 
-                if dialog.last_message_text == ' ': dialog.last_message_text = 'Фото'
-                if len(dialog.last_message_text) == 50: dialog.last_message_text += '...'
+                    message = Messages.objects.filter(dialog=dialog_id).last()
+                    dialog = Dialog.objects.get(id=dialog_id)
+                    dialog.last_message = message
+                    dialog.last_message_time = message.date
+                    dialog.save()
 
-                dialog.last_message_time = message.date
-                dialog.save()
+                else:
+
+                    dialog = get_object_or_404(Dialog, id=dialog_id)
+                    dialog.delete()
+                    return redirect('all_messages')
 
         # Пост - Кнопка поставить / отменить лайк
 
@@ -129,6 +140,17 @@ def dialog(request, dialog_id):
 
             need_post = Posts.objects.get(id=request.POST['post_id'])
             need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
+
+            if request.user.id != need_post.author.profile_id:
+
+                new_notification = Notification()
+                new_notification.from_user = Profile.objects.get(profile_id=need_post.author.profile_id)
+                new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+                new_notification.message = '- пользователю понравился ваш пост!'
+                new_notification.type_object = 'post_like'
+                new_notification.object_id = request.POST['post_id']
+                new_notification.content_type = ContentType.objects.get_for_model(Posts)
+                new_notification.save()
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike_post':
 
@@ -171,6 +193,12 @@ def dialog(request, dialog_id):
             need_post = GroupPosts.objects.get(id=request.POST['post_id'])
             need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
 
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'dialog-delete':
+
+            need_dialog = Dialog.objects.get(id=dialog_id)
+            need_dialog.delete()
+            return redirect('all_messages')
+
         # Обновить страницу при прокрутке вверх
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'add_message_list':
@@ -181,8 +209,7 @@ def dialog(request, dialog_id):
     posts_form = PostsForm
     comment_form = CommentPhotoForm
 
-    another_user = Dialog.objects.get(id=dialog_id).user_list.exclude(profile_id=request.user.id).first()
-    print(another_user)
+    another_user = get_object_or_404(Dialog, id=dialog_id).user_list.exclude(profile_id=request.user.id).first()
 
     for message in Messages.objects.filter(dialog=dialog_id):
         if message.author.profile_id != request.user.id:
@@ -191,6 +218,13 @@ def dialog(request, dialog_id):
 
     messages_all = list(Messages.objects.filter(dialog=dialog_id).order_by('date'))
     messages = list(messages_all)[start_slice:]
+
+    all_dialogs = Dialog.objects.filter(user_list=Profile.objects.get(profile_id=request.user.id)).order_by('-last_message_time')
+
+    for target_dialog in all_dialogs:
+
+        target_dialog.another_user = \
+            [profile for profile in target_dialog.user_list.all() if profile.profile_id != request.user.id][0]
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
     not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
@@ -204,6 +238,14 @@ def dialog(request, dialog_id):
         'comment_form': comment_form,
         'start_slice': start_slice,
         'another_user': another_user,
+        'all_dialogs': all_dialogs,
     }
 
-    return render(request, 'usermessages/single_dialog.html', data)
+    return render(request, 'usermessages/dialog.html', data)
+
+@login_required
+def unread_messages(request):
+
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    unread_count = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+    return JsonResponse({'unread_count': unread_count})

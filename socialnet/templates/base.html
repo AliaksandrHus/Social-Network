@@ -19,18 +19,22 @@
 
 <body>
 
+    <div class="background">
+        <img src="/media/background.jpg">
+    </div>
+
     {% if request.user.is_authenticated %}
 
         <div class="menu">
 
-            <a href="{% url 'profile_page' %}">ПРОФИЛЬ</a>
+            <a id="msg" href="{% url 'profile_page' %}">ПРОФИЛЬ</a>
             <a href="{% url 'groups' %}">СООБЩЕСТВА</a>
             <a href="{% url 'news' %}">НОВОСТИ</a>
 
             {% if not_read_message %}
                 <a href="{% url 'all_messages' %}">СООБЩЕНИЯ<span id="menu-message">{{ not_read_message }}</span></a>
             {% else %}
-                <a href="{% url 'all_messages' %}">СООБЩЕНИЯ</a>
+                <a href="{% url 'all_messages' %}">СООБЩЕНИЯ<span style="display: none;" id="menu-message">0</span></a>
             {% endif %}
                 <a href="{% url 'search' %}">ПОИСК</a>
 
@@ -39,21 +43,21 @@
         {% if user|length > 20 %}
 
         <div class="menu-user">
-            <a id="user" href="{% url 'settings_page' %}"><span class="dot-yes">●&nbsp;&nbsp;</span>
-                {% if request.user.first_name.upper|length > 1  %}
+            <a id="user" href="{% url 'settings_page_edit_profile' %}"><span class="dot-yes">●&nbsp;&nbsp;</span>
+                {% if request.user.first_name.upper|length > 0 or request.user.last_name.upper|length > 0  %}
                 {{ request.user.first_name.upper }}
                 {% else %}
-                SUPER ADMIN{% endif %}</a>
+                NO NAME{% endif %}</a>
         </div>
 
         {% else %}
 
         <div class="menu-user">
-            <a id="user" href="{% url 'settings_page' %}"><span class="dot-yes">●&nbsp;&nbsp;</span>
-                {% if request.user.first_name.upper|length > 1  %}
+            <a id="user" href="{% url 'settings_page_edit_profile' %}"><span class="dot-yes">●&nbsp;&nbsp;</span>
+                {% if request.user.first_name.upper|length > 0 or request.user.last_name.upper|length > 0  %}
                 {{ user.upper }}
                 {% else %}
-                SUPER ADMIN{% endif %}</a>
+                NO NAME{% endif %}</a>
         </div>
 
         {% endif %}

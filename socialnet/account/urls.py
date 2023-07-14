@@ -18,6 +18,8 @@ urlpatterns = [
     path('profile_page/photo', views.profile_page_photo, name='profile_page_photo'),
     path('profile_page/photo/show-<int:pk_photo>', views.profile_page_photo_show, name='profile_page_photo_show'),
 
+    path('block_page', views.block_page, name='block_page'),
+
     path('profile_page/report/post-<int:pk_post>', views.profile_page_report_post,name='profile_page_report_post'),
     path('profile_page/report/repost-<int:pk_post>', views.profile_page_report_repost,name='profile_page_report_repost'),
     path('profile_page/report/group_post-<int:pk_post>', views.profile_page_report_group_post, name='profile_page_report_group_post'),
@@ -39,6 +41,6 @@ urlpatterns = [
     path('login_page', views.login_page, name='login_page'),
     path('logout_page', views.logout_page, name='logout_page'),
     path('registration_page', views.registration_page, name='registration_page'),
+    path('security_code', views.security_code, name='security_code'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
