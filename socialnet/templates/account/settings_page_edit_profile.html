@@ -7,9 +7,8 @@
 
     <div class="menu2">
         {% if profile.user_admin %}
-    <a href="{% url 'settings_page_admin' %}">АДМИН</a>
+    <a href="{% url 'settings_page_admin' %}">АДМИНКА</a>
         {% endif %}
-    <a href="{% url 'settings_page_edit_profile' %}">НАСТРОЙКИ</a>
     <a href="{% url 'logout_page' %}">ВЫХОД</a>
     </div>
 
@@ -17,9 +16,46 @@
 
 {% block content %}
 
+        <br>
+
+        {% if profile.user_admin %}
+
+        <div class="error">
+            <h3>У вашего профиля есть права администратора.</h3>
+        </div>
+
+        <div class="standard">
+            <p>Что бы перейти в панель администратора нажмите на вкладку "АДМИНКА"</p>
+        </div>
+
+        <br>
+
+        {% endif %}
+
     <div class="standard">
-        <h3>Описание вашего профиля:</h3>
+        <h3>Редактировать профиль:</h3>
     </div>
+
+    <div class="standard">
+        <p>Имя и фаммилия:</p>
+
+    <div class="photo-comment">
+        <form method="post">
+            {% csrf_token %}
+        <input type="text" name="first_name" placeholder="Введите имя...">
+            <button id="create-info" type="submit" name="submit_button" value="create_info_name">Сохранить</button>
+        <input type="text" name="last_name" placeholder="Введите фаммилию...">
+        </form>
+
+    </div>
+
+    </div>
+
+    <br>
+
+    <div class="standard">
+        <p>Описание:</p>
+
 
     {% if profile_info %}
 
@@ -29,21 +65,22 @@
 
     {% else %}
 
-    <div class="standard">
+    <div class="profile-info">
         <p>Ничего нет...</p>
     </div>
 
     {% endif %}
 
     <div class="photo-comment">
-
         <form method="post">
             {% csrf_token %}
             {{ comment_form.comment }}
-            <button type="submit" name="submit_button" value="create_info">Добавить</button>
+            <button type="submit" name="submit_button" value="create_info">Сохранить</button>
         </form>
+    </div>
 
     </div>
+
 
 
 {% endblock %}

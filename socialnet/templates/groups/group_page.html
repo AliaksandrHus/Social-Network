@@ -184,7 +184,7 @@
             <form method="post">
                 {% csrf_token %}
                 {{ comment_form.comment }}
-                <button type="submit" name="submit_button" value="create_info">Добавить</button>
+                <button type="submit" name="submit_button" value="create_info">Сохранить</button>
             </form>
 
         </div>
@@ -307,13 +307,14 @@
 
             {% if group.user == request.user or request.user.id in team %}
 
-            <div class="delete-post-b-group">
+            <div class="repost-btn">
                 <form action="/profile_page/post-{{ post.id }}/group_repost">
                     <button class="delete-post" type="submit">↩</button>
                 </form>
             </div>
 
-            <div class="delete-post-b">
+
+            <div class="delete-post-b-group">
                 <form method="post">
                     {% csrf_token %}
                     <button class="delete-post" type="submit" name="submit_button" value="posts-delete">✕</button>
@@ -321,9 +322,22 @@
                 </form>
             </div>
 
+
+                <div class="repost-btn">
+                    <form action="/profile_page/post-{{ post.id }}/group_repost">
+                        <button class="delete-post" type="submit">↩</button>
+                    </form>
+                </div>
+
             {% else %}
 
-                <div class="delete-post-b">
+                <div class="delete-post-b-group">
+                    <form action="/profile_page/report/group_post-{{ post.id }}">
+                        <button class="delete-post" type="submit">!</button>
+                    </form>
+                </div>
+
+                <div class="repost-btn">
                     <form action="/profile_page/post-{{ post.id }}/group_repost">
                         <button class="delete-post" type="submit">↩</button>
                     </form>

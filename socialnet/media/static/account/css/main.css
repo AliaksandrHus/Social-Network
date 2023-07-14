@@ -1,6 +1,23 @@
 @import url('https://fonts.googleapis.com/css?family=Ubuntu+Condensed');
 @import url('https://fonts.cdnfonts.com/css/cinematografica');
 
+/* Фон --------------------------------------------------------------- */
+
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+}
+
+.background img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* opacity: 0.8; */
+}
 
 /* Аватар ------------------------------------------------------------ */
 
@@ -104,7 +121,8 @@ input[type="file"]::before {
     text-align: center; /* Положение текста */
     border-radius: 30px;
     display: flex;
-    justify-content: center;}
+    justify-content: center;
+}
 
 /* Меню текст*/
 .menu A {
@@ -198,10 +216,13 @@ input[type="file"]::before {
 /* Второстепенное меню общее */
 .menu2 {
     padding: 20px; /* Поля вокруг текста */
-    background: white; /* Цвет фона */
+    background: rgba(255, 255, 255, 0.0);
     text-align: center; /* Положение текста */
+    display: flex;
+    justify-content: center;
     margin-bottom: -15px;
 }
+
 
 /* Второстепенное меню текст*/
 .menu2 A {
@@ -209,6 +230,8 @@ input[type="file"]::before {
     text-decoration: none; /* Декорация текста */
     margin: 0 50px 0 50px; /* Отступы пунктов меню */
     color: RGB(209, 209, 209); /* Цвет текста меню */
+    width: 100px;
+
 }
 
 /* Изменение цвета при наведении курсора мыши в второстепенном меню */
@@ -365,6 +388,8 @@ input[type="file"]::before {
     color: RGB(0, 157, 224); /* Цвет текста ссылок */
     text-decoration: none; /* Декорация текста ссылок */
     margin-bottom: 10px; /* Отступы сверху */
+    font-size: 15px;
+
 }
 
 /* Подписчики (following) общее */
@@ -437,6 +462,8 @@ input[type="file"]::before {
     align-items: center;
     margin-right: 10px;
     margin-left: 10px;
+    max-width: 65px;
+
 }
 
 /* Подписчики и подписки контейнер аватар */
@@ -763,7 +790,6 @@ input[type="file"]::before {
     text-align:center; /* Расположение в блоке - по центру */
     background: RGB(248, 248, 248); /* Цвет фона */
     border-radius: 10px;
-
     margin-top: 5px;
 }
 
@@ -889,7 +915,6 @@ input[type="file"]::before {
     left: calc(75% - 35px);
     margin-top: 16px;
     margin-left: -3px;
-
 }
 
 /* Вывод записей в ленте кнопка удалить комментарий */
@@ -899,7 +924,6 @@ input[type="file"]::before {
     left: calc(75% - 35px);
     margin-top: 16px;
     margin-left: -30px;
-
 }
 
 
@@ -972,6 +996,45 @@ input[type="file"]::before {
     margin-top: 2px;
     margin-left: 1px;
     font-size: 10px;
+}
+
+
+/* Вывод записей в ленте кнопка удалить комментарий */
+.repost-btn button {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    border-color: transparent;
+    background-color: RGB(220, 220, 220);
+    cursor: pointer; /* Изменить курсор при наведении */
+    z-index: 9999;
+    justify-content: center;
+    cursor: pointer; /* Изменить курсор при наведении */
+    display: flex;
+    color: white;
+}
+
+/* Вывод записей в ленте кнопка удалить комментарий при наведении */
+.repost-btn:hover button {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    border-color: transparent;
+    background-color: orange;
+    z-index: 9999;
+    justify-content: center;
+    cursor: pointer; /* Изменить курсор при наведении */
+    display: flex;
+    color: white;
+}
+
+/* Вывод записей в ленте кнопка удалить комментарий */
+.repost-btn {
+    position: absolute;
+    display: flex;
+    left: calc(75% - 35px);
+    margin-top: 16px;
+    margin-left: -3px;
 }
 
 
@@ -1558,6 +1621,18 @@ input[type="file"]::before {
     margin-bottom: 70px;
 }
 
+.photo-comment input {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    height: 27px;
+    width: calc(100% - 100px);
+    margin-bottom: 4px;
+    margin-right: 10px;
+    border-color: RGB(230, 230, 230);
+    border-radius: 3px;
+    float: left;
+    border: 1px solid RGB(230, 230, 230); /* Заменил два отдельных свойства border-color на одно свойство border */
+}
+
 /* Фото поле ввода комментария поле ввода */
 .comment-photo-textarea {
     font-family: 'Ubuntu Condensed', sans-serif;
@@ -1581,6 +1656,22 @@ input[type="file"]::before {
     border: 0px;
     width: 80px;
     height: 33px;
+    margin-bottom: 10px;
+    cursor: pointer; /* Изменить курсор при наведении */
+    float: right;
+}
+
+/* Фото поле ввода комментария кнопка */
+#create-info {
+    text-align: center;
+    font-family: 'Ubuntu Condensed', sans-serif;
+    background: RGB(0, 157, 224);
+    color: white;
+    border-color: RGB(0, 157, 224);
+    border-radius: 3px;
+    border: 0px;
+    width: 80px;
+    height: 66px;
     margin-bottom: 10px;
     cursor: pointer; /* Изменить курсор при наведении */
     float: right;
@@ -1677,7 +1768,35 @@ input[type="file"]::before {
 }
 
 
+/* Вывод всех комментариев кнопка удалить комментарий */
+.create-repost-short {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    border-color: transparent;
+    background-color: RGB(220, 220, 220);
+    cursor: pointer; /* Изменить курсор при наведении */
+    z-index: 9999;
+    justify-content: center;
+    cursor: pointer; /* Изменить курсор при наведении */
+    display: flex;
+    color: white;
+}
 
+/* Вывод всех комментариев кнопка удалить комментарий при наведении */
+.create-repost-short:hover {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    border-color: transparent;
+    background-color: orange;
+    cursor: pointer; /* Изменить курсор при наведении */
+    z-index: 9999;
+    justify-content: center;
+    cursor: pointer; /* Изменить курсор при наведении */
+    display: flex;
+    color: white;
+}
 
 /* Вывод всех комментариев кнопка удалить комментарий */
 .delete-comment {
@@ -1801,8 +1920,7 @@ input[type="file"]::before {
 
 /* Вывод всех комментариев контейнер содержимое? */
 .message-all-comment {
-    margin-right: 25%;
-    margin-left: 25%;
+
     margin-top: 10px;
     /* margin-bottom: 10px; */
     border-radius: 10px;
@@ -1922,8 +2040,7 @@ input[type="file"]::before {
 /* Вывод фото в переписке */
 .message-photo {
     font-family: 'Ubuntu Condensed', sans-serif;
-    margin-right: 25%; /* Отступы справа */
-    margin-left: 25%; /* Отступы слева */
+
     text-align:center; /* Расположение в блоке - по центру */
     background: RGB(248, 248, 248);
     border-radius: 10px;
@@ -1989,6 +2106,25 @@ input[type="file"]::before {
     margin-right: 10px;
 }
 
+.posts-create.file-selected input[type="file"]::before {
+    /* Стили для псевдоэлемента ::before, если файл выбран */
+    content: '    ✓';
+}
+
+.posts-create input[type="file"]::before {
+    /* Стили по умолчанию для псевдоэлемента ::before */
+    content: 'Photo';
+}
+
+.posts-create-message.file-selected input[type="file"]::before {
+    /* Стили для псевдоэлемента ::before, если файл выбран */
+    content: '    ✓';
+}
+
+.posts-create-message input[type="file"]::before {
+    /* Стили по умолчанию для псевдоэлемента ::before */
+    content: 'Photo';
+}
 
 /* Фотографии кнопка */
 .post-button {
@@ -2024,7 +2160,7 @@ input[type="file"]::before {
     font-family: 'Ubuntu Condensed', sans-serif;
     height: 27px;
     width: calc(100% - 207px);
-    margin-bottom: 10px;
+    /* margin-bottom: 10px; */
     border-color: RGB(230, 230, 230);
     border-radius: 3px;
     float: left;
@@ -2206,7 +2342,7 @@ input[type="file"]::before {
     border-color: white;
     border-radius: 100px;
     width: calc(100% - 40px);
-    height: 13px;
+    height: 16px;
     margin-bottom: -4px;
 }
 
@@ -2272,3 +2408,320 @@ input[type="file"]::before {
 .status-block form {
     float: left;
 }
+
+
+
+
+
+
+
+
+
+
+
+/* Вывод всех комментариев -------------------------------------- */
+
+
+.dialog-and-message {
+    display: flex;
+}
+
+/* Вывод всех комментариев контейнер содержимое? */
+.all-dialog-list {
+    margin-top: 10px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+}
+
+/* Вывод всех комментариев аватар */
+#not-read-message {
+    width: 30px;
+    height: 30px;
+    overflow: hidden;
+    border-radius: 50%;
+    border: 2px solid #fff; /* Параметры рамки */
+    outline: solid 2px red;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-right: 10px;
+    margin-left: 10px;
+    object-fit: cover; /* Сохранить пропорции изображения */
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Вывод всех комментариев аватар */
+.all-dialog-list img {
+    width: 30px;
+    height: 30px;
+    overflow: hidden;
+    border-radius: 50%;
+    border: 2px solid #fff; /* Параметры рамки */
+    outline: solid 2px RGB(30, 30, 30);
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-right: 10px;
+    margin-left: 10px;
+    object-fit: cover; /* Сохранить пропорции изображения */
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Вывод всех комментариев A */
+.all-dialog-list A {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    color: RGB(0, 157, 224);
+    display: inline-block;
+    vertical-align: middle; /* Чтобы выровнять текст по вертикали с картинкой */
+    margin-left: 1px;
+    margin-right: 1px;
+    text-decoration: none;
+}
+
+.all-dialog-list {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    background: RGB(248, 248, 248);
+    border-radius: 10px;
+}
+
+
+.container {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    display: flex;
+    margin-left: 25%;
+    margin-right: 25%;
+}
+
+.container H3 {
+    margin-left: 10px;
+}
+
+.left-container {
+    flex: 1;
+    margin-right: 10px;
+    margin-left: 5px;
+
+  /* Стили для левого контейнера */
+}
+
+.right-container {
+    flex: 2.5;
+  /* Стили для правого контейнера */
+}
+
+#message_bg {
+    width: 100%;
+    height: auto;
+}
+
+/* Вывод записей в ленте общее */
+.posts-all-message {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    text-align:center; /* Расположение в блоке - по центру */
+    background: RGB(248, 248, 248); /* Цвет фона */
+    border-radius: 10px;
+    margin-top: 5px;
+}
+
+/* Создания записи в ленте общее */
+.posts-create-message {
+
+    margin-right: 25%;
+    margin-left: 25%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+
+    position: fixed;
+    background: RGB(248, 248, 248);
+    border-radius: 10px;
+
+    bottom: 0;
+    padding: 10px;
+    width: 48%;
+}
+
+/* Фотографии input */
+.posts-create-message input[type=file]::file-selector-button {
+    text-align: center;
+    font-family: 'Ubuntu Condensed', sans-serif;
+    background: RGB(0, 157, 224);
+    color: white;
+    border-color: RGB(0, 157, 224);
+    border-radius: 3px;
+    border: 0px;
+    width: 132px;
+    height: 20px;
+    position: relative;
+    bottom: -107px;
+    z-index: 9999;
+    cursor: pointer; /* Изменить курсор при наведении */
+}
+
+/* Фотографии input */
+.posts-create-message input[type="file"]::before {
+    position: absolute;
+    pointer-events: none;
+    content: "Photo";
+    left: 10px;
+    top: 9px;
+    color: white;
+}
+
+/* Фотографии кнопка */
+.posts-create-message input {
+    text-align: center;
+    font-family: 'Ubuntu Condensed', sans-serif;
+    background: RGB(0, 157, 224);
+    color: white;
+    border-color: RGB(0, 157, 224);
+    border-radius: 3px;
+    border: 0px;
+    width: 50px;
+    height: 33px;
+    position: relative;
+    z-index: 9999;
+    cursor: pointer; /* Изменить курсор при наведении */
+    color: RGB(0, 157, 224);
+    float: right;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* Вывод всех комментариев контейнер содержимое? */
+.message-dialog-user {
+
+    margin-top: 2px;
+    margin-bottom: -7px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+
+}
+
+
+/* Вывод всех комментариев аватар */
+.message-dialog-user img {
+    width: 30px;
+    height: 30px;
+    overflow: hidden;
+    border-radius: 50%;
+    border: 2px solid #fff; /* Параметры рамки */
+    outline: solid 2px RGB(30, 30, 30);
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-right: 10px;
+    margin-left: 10px;
+    object-fit: cover; /* Сохранить пропорции изображения */
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Вывод всех комментариев A */
+.message-dialog-user A {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    color: RGB(0, 157, 224);
+    display: inline-block;
+    vertical-align: middle; /* Чтобы выровнять текст по вертикали с картинкой */
+    margin-left: 1px;
+    margin-right: 1px;
+    text-decoration: none;
+}
+
+/* Вывод всех комментариев имя и дата */
+.message-comment-user-date {
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    margin-right: 10px;
+    min-width: 80px;
+}
+
+/* Вывод всех комментариев имя и дата */
+.message-comment-date {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    font-size: 10px;
+    color: gray;
+}
+
+/* Вывод всех комментариев контейнер? еще один бля?) */
+.message-all-comment {
+    font-family: 'Ubuntu Condensed', sans-serif;
+    background: RGB(248, 248, 248);
+    border-radius: 10px;
+}
+
+/* Вывод всех комментариев P */
+.message-all-comment P {
+    margin-right: 65px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-left: 2px solid gray;
+    padding-left: 10px;
+    border-color: white;
+    white-space: pre-line;
+    text-align: justify;
+}
+
+.delete-dialog {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    border-color: transparent;
+    background-color: red;
+    cursor: pointer; /* Изменить курсор при наведении */
+    z-index: 9999;
+    justify-content: center;
+    cursor: pointer; /* Изменить курсор при наведении */
+    display: flex;
+    color: white;
+    float: right;
+    position: absolute;
+    left: calc(75% - 38px);
+    top: 85px;
+}
+
+
+/* Ввод статуса форма */
+.security-code {
+    margin-left: calc(50% - 50px);
+    margin-right: calc(50% - 50px);
+    font-family: 'Ubuntu Condensed', sans-serif;
+    padding-left: 10px;
+    border-color: gray;
+    border-radius: 5px;
+    width: 100px;
+    height: 60px;
+    margin-bottom: -4px;
+    font-size: 50px;
+
+}
+
+/* Регистрация и логин кнопка */
+#code-button {
+    margin-top: 10px;
+    margin-left: calc(50% - 50px);
+    margin-right: calc(50% - 50px);
+    font-family: 'Ubuntu Condensed', sans-serif;
+    background: RGB(0, 157, 224);
+    color: white;
+    border-color: RGB(0, 157, 224);
+    border-radius: 3px;
+    border: 0px;
+    width: 115px;
+    height: 33px;
+    cursor: pointer; /* Изменить курсор при наведении */
+}
+

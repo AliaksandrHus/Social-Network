@@ -5,6 +5,148 @@
 
 {% block content %}
 
+    {% if notification %}
+
+    <div class="standard">
+        <h3>Оповещения</h3>
+    </div>
+
+    {% for notification in user_notification %}
+
+        {% if notification.type_object == 'follow' %}
+
+            <div class="photo-all-comment">
+                <a href="/user-{{ notification.sender_user.profile_id }}"><img src="{{ notification.sender_user.avatar.url }}"></a>
+                    <div class="photo-comment-user-date">
+                        <a href="/user-{{ notification.sender_user.profile_id }}">{{ notification.sender_user.first_name }} {{ notification.sender_user.last_name }}</a>
+                    </div>
+                <p>{{ notification.message }}</p>
+
+            </div>
+
+            <div class="view-post-b-group">
+                <form action="/profile_page/followers">
+                    <button class="view-post"><p>➤</p></button>
+                </form>
+            </div>
+
+        {% elif notification.type_object == 'photo_like' %}
+
+            <div class="photo-all-comment">
+                <a href="/user-{{ notification.sender_user.profile_id }}"><img src="{{ notification.sender_user.avatar.url }}"></a>
+                    <div class="photo-comment-user-date">
+                        <a href="/user-{{ notification.sender_user.profile_id }}">{{ notification.sender_user.first_name }} {{ notification.sender_user.last_name }}</a>
+                    </div>
+                <p>{{ notification.message }}</p>
+
+            </div>
+
+            <div class="view-post-b-group">
+                <form action="/profile_page/photo/show-{{ notification.object_id }}">
+                    <button class="view-post"><p>➤</p></button>
+                </form>
+            </div>
+
+        {% elif notification.type_object == 'photo_comment' %}
+
+            <div class="photo-all-comment">
+                <a href="/user-{{ notification.sender_user.profile_id }}"><img src="{{ notification.sender_user.avatar.url }}"></a>
+                    <div class="photo-comment-user-date">
+                        <a href="/user-{{ notification.sender_user.profile_id }}">{{ notification.sender_user.first_name }} {{ notification.sender_user.last_name }}</a>
+                    </div>
+                <p>{{ notification.message }}</p>
+
+            </div>
+
+            <div class="view-post-b-group">
+                <form action="/profile_page/photo/show-{{ notification.object_id }}">
+                    <button class="view-post"><p>➤</p></button>
+                </form>
+            </div>
+
+        {% elif notification.type_object == 'post_like' %}
+
+            <div class="photo-all-comment">
+                <a href="/user-{{ notification.sender_user.profile_id }}"><img src="{{ notification.sender_user.avatar.url }}"></a>
+                    <div class="photo-comment-user-date">
+                        <a href="/user-{{ notification.sender_user.profile_id }}">{{ notification.sender_user.first_name }} {{ notification.sender_user.last_name }}</a>
+                    </div>
+                <p>{{ notification.message }}</p>
+
+            </div>
+
+            <div class="view-post-b-group">
+                <form action="/profile_page/post-{{ notification.object_id }}">
+                    <button class="view-post"><p>➤</p></button>
+                </form>
+            </div>
+
+        {% elif notification.type_object == 'post_comment' %}
+
+            <div class="photo-all-comment">
+                <a href="/user-{{ notification.sender_user.profile_id }}"><img src="{{ notification.sender_user.avatar.url }}"></a>
+                    <div class="photo-comment-user-date">
+                        <a href="/user-{{ notification.sender_user.profile_id }}">{{ notification.sender_user.first_name }} {{ notification.sender_user.last_name }}</a>
+                    </div>
+                <p>{{ notification.message }}</p>
+
+            </div>
+
+            <div class="view-post-b-group">
+                <form action="/profile_page/post-{{ notification.object_id }}">
+                    <button class="view-post"><p>➤</p></button>
+                </form>
+            </div>
+
+        {% elif notification.type_object == 'repost_comment' %}
+
+            <div class="photo-all-comment">
+                <a href="/user-{{ notification.sender_user.profile_id }}"><img src="{{ notification.sender_user.avatar.url }}"></a>
+                    <div class="photo-comment-user-date">
+                        <a href="/user-{{ notification.sender_user.profile_id }}">{{ notification.sender_user.first_name }} {{ notification.sender_user.last_name }}</a>
+                    </div>
+                <p>{{ notification.message }}</p>
+
+            </div>
+
+            <div class="view-post-b-group">
+                <form action="/profile_page/repost-{{ notification.object_id }}">
+                    <button class="view-post"><p>➤</p></button>
+                </form>
+            </div>
+
+        {% elif notification.type_object == 'group_repost_comment' %}
+
+            <div class="photo-all-comment">
+                <a href="/user-{{ notification.sender_user.profile_id }}"><img src="{{ notification.sender_user.avatar.url }}"></a>
+                    <div class="photo-comment-user-date">
+                        <a href="/user-{{ notification.sender_user.profile_id }}">{{ notification.sender_user.first_name }} {{ notification.sender_user.last_name }}</a>
+                    </div>
+                <p>{{ notification.message }}</p>
+
+            </div>
+
+            <div class="view-post-b-group">
+                <form action="/profile_page/grop-repost-{{ notification.object_id }}">
+                    <button class="view-post"><p>➤</p></button>
+                </form>
+            </div>
+
+        {% endif %}
+
+    {% endfor %}
+
+        <br>
+
+        <div class="standard">
+            <a href="/news/notification">Все оповещения</a>
+        </div>
+
+        <br>
+
+    {% endif %}
+
+
     <div class="standard">
         <h3>Лента записей</h3>
     </div>
@@ -22,7 +164,7 @@
                         </form>
                     </div>
 
-                    <div class="delete-post-b">
+                    <div class="repost-btn">
                         <form action="/profile_page/post-{{ post.id }}/repost">
                             <button class="delete-post" type="submit">↩</button>
                         </form>
@@ -202,7 +344,6 @@
                     <br>
 
             {% elif post.type_object == 'RePosts' %}
-
                 <div class="photo-all-comment">
                     <a href="/user-{{ post.author.profile_id }}"><img src="{{ post.author.avatar.url }}"></a>
                         <div class="photo-comment-user-date">
@@ -219,17 +360,22 @@
 
                 <div class="posts-all">
 
+                 {% if request.user != post.post.author.user %}
+
+
                     <div class="delete-post-b-group">
                         <form action="/profile_page/report/post-{{ post.post.id }}">
                             <button class="delete-post" type="submit">!</button>
                         </form>
                     </div>
 
-                    <div class="delete-post-b">
+                    <div class="repost-btn">
                         <form action="/profile_page/post-{{ post.post.id }}/repost">
                             <button class="delete-post" type="submit">↩</button>
                         </form>
                     </div>
+
+                {% endif %}
 
                     <div class="posts-all-container">
                             <a href="/user-{{ post.post.author.profile_id }}"><img src="{{ post.post.author.avatar.url }}"></a>
@@ -432,13 +578,17 @@
 
                 <div class="posts-all">
 
+                    {% if request.user != post.post.author.user %}
+
                     <div class="delete-post-b-group">
                         <form action="/profile_page/report/group_post-{{ post.post.id }}">
                             <button class="delete-post" type="submit">!</button>
                         </form>
                     </div>
 
-                    <div class="delete-post-b">
+                    {% endif %}
+
+                    <div class="repost-btn">
                         <form action="/profile_page/post-{{ post.post.id }}/group_repost">
                             <button class="delete-post" type="submit">↩</button>
                         </form>
@@ -647,7 +797,7 @@
                         </form>
                     </div>
 
-                    <div class="delete-post-b">
+                    <div class="repost-btn">
                         <form action="/profile_page/post-{{ post.id }}/group_repost">
                             <button class="delete-post" type="submit">↩</button>
                         </form>
@@ -861,7 +1011,7 @@
                         </form>
                     </div>
 
-                    <div class="delete-post-b">
+                    <div class="repost-btn">
                         <form action="/profile_page/post-{{ post.id }}/repost">
                             <button class="delete-post" type="submit">↩</button>
                         </form>
@@ -1058,17 +1208,22 @@
 
                 <div class="posts-all">
 
+                {% if request.user != post.post.author.user %}
+
+
                     <div class="delete-post-b-group">
                         <form action="/profile_page/report/post-{{ post.post.id }}">
                             <button class="delete-post" type="submit">!</button>
                         </form>
                     </div>
 
-                    <div class="delete-post-b">
+                    <div class="repost-btn">
                         <form action="/profile_page/post-{{ post.post.id }}/repost">
                             <button class="delete-post" type="submit">↩</button>
                         </form>
                     </div>
+
+                {% endif %}
 
                     <div class="posts-all-container">
                             <a href="/user-{{ post.post.author.profile_id }}"><img src="{{ post.post.author.avatar.url }}"></a>
@@ -1271,13 +1426,17 @@
 
                 <div class="posts-all">
 
+                    {% if request.user != post.post.author.user %}
+
                     <div class="delete-post-b-group">
                         <form action="/profile_page/report/group_post-{{ post.post.id }}">
                             <button class="delete-post" type="submit">!</button>
                         </form>
                     </div>
 
-                    <div class="delete-post-b">
+                    {% endif %}
+
+                    <div class="repost-btn">
                         <form action="/profile_page/post-{{ post.post.id }}/group_repost">
                             <button class="delete-post" type="submit">↩</button>
                         </form>
@@ -1486,7 +1645,7 @@
                         </form>
                     </div>
 
-                    <div class="delete-post-b">
+                    <div class="repost-btn">
                         <form action="/profile_page/post-{{ post.id }}/group_repost">
                             <button class="delete-post" type="submit">↩</button>
                         </form>

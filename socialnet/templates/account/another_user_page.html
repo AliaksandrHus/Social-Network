@@ -237,13 +237,17 @@
 
             <div class="posts-all">
 
+                    {% if request.user != post.post.author.user %}
+
                     <div class="delete-post-b-group">
                         <form action="/profile_page/report/group_post-{{ post.post.id }}">
                             <button class="delete-post" type="submit">!</button>
                         </form>
                     </div>
 
-                    <div class="delete-post-b">
+                    {% endif %}
+
+                    <div class="repost-btn">
                         <form action="/profile_page/post-{{ post.post.id }}/group_repost">
                             <button class="delete-post" type="submit">↩</button>
                         </form>
@@ -455,17 +459,22 @@
 
             <div class="posts-all">
 
+                {% if request.user != post.post.author.user %}
+
+
                     <div class="delete-post-b-group">
                         <form action="/profile_page/report/post-{{ post.post.id }}">
                             <button class="delete-post" type="submit">!</button>
                         </form>
                     </div>
 
-                    <div class="delete-post-b">
+                    <div class="repost-btn">
                         <form action="/profile_page/post-{{ post.post.id }}/repost">
                             <button class="delete-post" type="submit">↩</button>
                         </form>
                     </div>
+
+                {% endif %}
 
                 <div class="posts-all-container">
                         <a href="/user-{{ post.post.author.profile_id }}"><img src="{{ post.post.author.avatar.url }}"></a>
@@ -662,7 +671,7 @@
                 </form>
             </div>
 
-            <div class="delete-post-b">
+            <div class="repost-btn">
                 <form action="/profile_page/post-{{ post.id }}/repost">
                     <button class="delete-post" type="submit">↩</button>
                 </form>

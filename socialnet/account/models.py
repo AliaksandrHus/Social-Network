@@ -3,6 +3,9 @@ from django.db.models.signals import post_save
 from django.db import models
 from django.dispatch import receiver
 
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+
 
 class Profile(models.Model):
 
@@ -16,12 +19,14 @@ class Profile(models.Model):
     age = models.IntegerField(default=0)
     user_status = models.TextField(blank=True)
     user_admin = models.BooleanField(default=False)
+    block = models.BooleanField(default=False)
     profile_info = models.TextField(max_length=500, blank=True)
 
     followers = models.ManyToManyField(User, related_name='followers', blank=True)
     following = models.ManyToManyField(User, related_name='following', blank=True)
 
     avatar = models.ImageField(upload_to='avatars/')
+
 
     # методы
 
@@ -208,6 +213,21 @@ class RePostsComment(models.Model):
         verbose_name_plural = 'Комментарии репостов'
 
 
+class Notification(models.Model):
+
+    from_user = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=True, related_name='from_user')
+    sender_user = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=True, related_name='sender_user')
+
+    date = models.DateTimeField(auto_now_add=True)
+
+    message = models.TextField(blank=True)
+    type_object = models.TextField(blank=True)
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
 
@@ -248,51 +268,3 @@ def create_user_profile(sender, instance, created, **kwargs):
                                      avatar='avatars/standard-avatar.jpg')
 
 
-
-
-
-        #
-        # new_profile = Profile()
-        # new_profile.profile_id = instance.id
-        # new_profile.user = instance
-        # new_profile.first_name = instance.first_name if instance.first_name else 'SUPER',
-        # new_profile.last_name = instance.last_name if instance.last_name else 'ADMIN',
-        # new_profile.avatar = 'avatars/standard-avatar.jpg'
-        #
-        # if new_profile.first_name == 'Саня' and new_profile.last_name == 'Гуcев': new_profile.user_admin = True
-        #
-        # new_profile.save()
-        #
-        # # Дать права админа первому пользователю
-        #
-        # if User.objects.all().count() == 0:
-        #
-        #     first_user = Profile.objects.get(profile_id=1)
-        #     first_user.user_admin = True
-        #     first_user.save()
-        #
-        # # Создать пользователя админа для сообщений
-        #
-        #     admin_message = User()
-        #     admin_message.username = 'admin'
-        #     admin_message.first_name = 'admin'
-        #     admin_message.save()
-        #
-        #     admin_profile = Profile()
-        #     admin_profile.profile_id = admin_message.id
-        #     admin_profile.user = admin_message
-        #     admin_profile.first_name = 'admin'
-        #     admin_profile.avatar = 'avatars/standard-avatar.jpg'
-        #     admin_profile.save()
-
-        # Profile.objects.create(profile_id=instance.id,
-        #                        user=instance,
-        #                        first_name=(instance.first_name or 'SUPER'),
-        #                        last_name=(instance.last_name or 'ADMIN'),
-        #                        avatar='avatars/standard-avatar.jpg')
-        #
-        # if User.objects.all().count() == 1:
-        #
-        #     first_user = Profile.objects.get(profile_id=1)
-        #     first_user.user_admin = True
-        #     first_user.save()

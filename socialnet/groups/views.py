@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 
 from usermessages.models import Dialog
 
-from account.models import Profile
+from account.models import Profile, Notification
 from account.forms import PostsForm, DescriptionPhotoForm, CommentPhotoForm
 
 from .models import Group, GroupPhoto, GroupPosts, GroupPostsComment, GroupRePostsComment, GroupRePosts
@@ -16,11 +16,15 @@ from .models import GroupPostsCommentAuthor, GroupPhotoComment, GroupPhotoCommen
 from itertools import chain
 import random
 
+from django.contrib.contenttypes.models import ContentType
+
 
 @login_required(login_url='/')
 def groups(request):
 
     """Страница групп общая"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     if request.method == 'POST':
 
@@ -61,6 +65,8 @@ def groups(request):
 def group_view(request, group_id):
 
     """Страница просмотра группы"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     group_info = ''
 
@@ -230,7 +236,8 @@ def group_view(request, group_id):
     temp_right = [None for _ in range(6 - len(all_photo_right))]
 
     user = f'{request.user.first_name} {request.user.last_name}'
-    group = Group.objects.get(profile_id=group_id)
+
+    group = get_object_or_404(Group, profile_id=group_id)
 
     posts_form = PostsForm
     comment_form = CommentPhotoForm
@@ -308,6 +315,8 @@ def group_followers(request, group_id):
 
     """Страница подписчиков других профилей"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if request.method == 'POST':
 
         # кнопка подписаться
@@ -316,6 +325,15 @@ def group_followers(request, group_id):
             user_pk = request.POST['user_id']
             person = Profile.objects.get(profile_id=request.user.id)
             person.follow(Profile.objects.get(profile_id=user_pk))
+
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=user_pk)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- потзователь подпиcался на вас!'
+            new_notification.type_object = 'follow'
+            new_notification.object_id = user_pk
+            new_notification.content_type = ContentType.objects.get_for_model(Profile)
+            new_notification.save()
 
         # кнопка отменить подписку
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'unfollow':
@@ -361,6 +379,8 @@ def group_team(request, group_id):
 
     """Страница подписчиков других профилей"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     search_people = []
 
     if request.method == 'POST':
@@ -372,6 +392,15 @@ def group_team(request, group_id):
             user_pk = request.POST['user_id']
             person = Profile.objects.get(profile_id=request.user.id)
             person.follow(Profile.objects.get(profile_id=user_pk))
+
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=user_pk)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- потзователь подпиcался на вас!'
+            new_notification.type_object = 'follow'
+            new_notification.object_id = user_pk
+            new_notification.content_type = ContentType.objects.get_for_model(Profile)
+            new_notification.save()
 
         # кнопка отменить подписку
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'unfollow':
@@ -462,8 +491,12 @@ def group_team(request, group_id):
 @login_required(login_url='/')
 def groups_photo(request, group_id):
 
+    """Страница фотографий группы"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     user = f'{request.user.first_name} {request.user.last_name}'
-    group = Group.objects.get(profile_id=group_id)
+    group = get_object_or_404(Group, profile_id=group_id)
     photo_all = GroupPhoto.objects.filter(author=group).order_by('-date')
     photo_tot = photo_all.count()
 
@@ -491,11 +524,13 @@ def groups_photo_show(request, group_id, pk_photo):
 
     """Страница просмотра фото активного пользователя"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     user = f'{request.user.first_name} {request.user.last_name}'
-    group = Group.objects.get(profile_id=group_id)
+    group = get_object_or_404(Group, profile_id=group_id)
     photo_all = GroupPhoto.objects.filter(author=group_id)
     photo_count = len(photo_all)
-    photo_single = GroupPhoto.objects.get(id=pk_photo)
+    photo_single = get_object_or_404(GroupPhoto, id=pk_photo)
 
     check_like = photo_single.like.filter(username=request.user.username).exists()  # проверка лайка
     count_like = photo_single.like.count()
@@ -652,6 +687,10 @@ def groups_photo_show(request, group_id, pk_photo):
 @login_required(login_url='/')
 def groups_post(request, group_id, pk_post):
 
+    """Страница просмотра поста группы"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if request.method == 'POST':
 
     # Кнопка удалить пост
@@ -661,6 +700,8 @@ def groups_post(request, group_id, pk_post):
             post_id = request.POST['post_id']
             post_delete = GroupPosts.objects.get(id=post_id)
             post_delete.delete()
+
+            return redirect('group_view', group_id)
 
     # Кнопка поставить / отменить лайк
 
@@ -715,9 +756,10 @@ def groups_post(request, group_id, pk_post):
             comment_delete.delete()
 
     user = f'{request.user.first_name} {request.user.last_name}'
-    group = Group.objects.get(profile_id=group_id)
+    group = get_object_or_404(Group, profile_id=group_id)
     comment_form = CommentPhotoForm
-    post = GroupPosts.objects.get(id=pk_post)
+    post = get_object_or_404(GroupPosts, id=pk_post)
+
 
     comments_user = GroupPostsComment.objects.filter(posts=post)
     comments_author = GroupPostsCommentAuthor.objects.filter(posts=post)

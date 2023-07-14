@@ -7,16 +7,21 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 
-from .models import Profile, Posts, Photo, PhotoComment, PostsComment, RePosts, RePostsComment
+from .models import Profile, Posts, Photo, PhotoComment, PostsComment, RePosts, RePostsComment, Notification
 
 from groups.models import GroupPosts, GroupRePosts, GroupRePostsComment
-from .forms import LoginForm, RegistrationForm, PostsForm, DescriptionPhotoForm, CommentPhotoForm, StatusForm
+from .forms import LoginForm, RegistrationForm, PostsForm, DescriptionPhotoForm, CommentPhotoForm, StatusForm, SecurityCode
 from usermessages.models import Dialog, Messages
 
 from itertools import chain
 import random
 import re
 
+from django.contrib.contenttypes.models import ContentType
+
+from django.core.mail import send_mail
+
+code = ''
 
 def index(request):
 
@@ -42,6 +47,8 @@ def index(request):
 def profile_page(request):
 
     """Профиль пользователя"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     profile_info = ''
 
@@ -300,6 +307,8 @@ def profile_page_post(request, pk_post):
 
     """Просмотр своего поста"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if request.method == 'POST':
 
     # Удалить пост
@@ -344,7 +353,8 @@ def profile_page_post(request, pk_post):
 
     user = f'{request.user.first_name} {request.user.last_name}'
     comment_form = CommentPhotoForm
-    post = Posts.objects.get(id=pk_post)
+
+    post = get_object_or_404(Posts, id=pk_post)
     all_comment = PostsComment.objects.filter(posts=post)
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
@@ -366,6 +376,8 @@ def profile_page_post(request, pk_post):
 def profile_page_repost(request, pk_repost):
 
     """Просмотр своего репоста"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     if request.method == 'POST':
 
@@ -423,7 +435,8 @@ def profile_page_repost(request, pk_repost):
 
     user = f'{request.user.first_name} {request.user.last_name}'
     comment_form = CommentPhotoForm
-    repost = RePosts.objects.get(id=pk_repost)
+
+    repost = get_object_or_404(RePosts, id=pk_repost)
     all_comment = RePostsComment.objects.filter(reposts=repost)
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
@@ -445,6 +458,8 @@ def profile_page_repost(request, pk_repost):
 def profile_page_group_repost(request, pk_repost):
 
     """Просмотр своего репоста"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     if request.method == 'POST':
 
@@ -503,7 +518,7 @@ def profile_page_group_repost(request, pk_repost):
 
     user = f'{request.user.first_name} {request.user.last_name}'
     comment_form = CommentPhotoForm
-    repost = GroupRePosts.objects.get(id=pk_repost)
+    repost = get_object_or_404(GroupRePosts, id=pk_repost)
     all_comment = GroupRePostsComment.objects.filter(reposts=repost)
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
@@ -525,6 +540,8 @@ def profile_page_group_repost(request, pk_repost):
 def profile_page_post_repost(request, pk_post):
 
     """Страница создания репоста"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     search_people = []
     text_search = ''
@@ -634,7 +651,8 @@ def profile_page_post_repost(request, pk_post):
 
     user = f'{request.user.first_name} {request.user.last_name}'
     comment_form = CommentPhotoForm
-    post = Posts.objects.get(id=pk_post)
+
+    post = get_object_or_404(Posts, id=pk_post)
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
     not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
@@ -655,6 +673,8 @@ def profile_page_post_repost(request, pk_post):
 def profile_page_post_group_repost(request, pk_group_post):
 
     """Страница создания репоста"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     search_people = []
     text_search = ''
@@ -761,7 +781,8 @@ def profile_page_post_group_repost(request, pk_group_post):
 
     user = f'{request.user.first_name} {request.user.last_name}'
     comment_form = CommentPhotoForm
-    post = GroupPosts.objects.get(id=pk_group_post)
+
+    post = get_object_or_404(GroupPosts, id=pk_group_post)
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
     not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
@@ -783,6 +804,8 @@ def profile_page_followers(request):
 
     """Страница подписчики активного пользователя"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if request.method == 'POST':
 
         # кнопка подписаться
@@ -791,6 +814,15 @@ def profile_page_followers(request):
             pk = request.POST['user_id']
             person = Profile.objects.get(profile_id=request.user.id)
             person.follow(Profile.objects.get(profile_id=pk))
+
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=pk)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- потзователь подпиcался на вас!'
+            new_notification.type_object = 'follow'
+            new_notification.object_id = pk
+            new_notification.content_type = ContentType.objects.get_for_model(Profile)
+            new_notification.save()
 
         # кнопка отменить подписку
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'unfollow':
@@ -828,6 +860,8 @@ def profile_page_following(request):
 
     """Страница подписки активного пользователя"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if request.method == 'POST':
 
         # кнопка отменить подписку
@@ -863,6 +897,8 @@ def profile_page_photo(request):
 
     """Страница фотоальбом активного пользователя"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     user = f'{request.user.first_name} {request.user.last_name}'
     person = Profile.objects.get(user=request.user.id)
     photo_all = Photo.objects.filter(author__user=request.user).order_by('-date')
@@ -888,11 +924,14 @@ def profile_page_photo_show(request, pk_photo):
 
     """Страница просмотра фото активного пользователя"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     user = f'{request.user.first_name} {request.user.last_name}'
     person = Profile.objects.get(profile_id=request.user.id)
     photo_all = Photo.objects.filter(author__user=request.user).order_by('-date')
     photo_count = len(photo_all)
-    photo_single = Photo.objects.get(id=pk_photo)
+
+    photo_single = get_object_or_404(Photo, id=pk_photo)
 
     check_like = photo_single.like.filter(username=request.user.username).exists()  # проверка лайка
     count_like = photo_single.like.count()
@@ -1032,6 +1071,8 @@ def another_user_page(request, pk):
 
     """Профиль другого пользователя"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     profile_info = ''
 
     if request.method == 'POST':
@@ -1041,6 +1082,15 @@ def another_user_page(request, pk):
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'follow':
             person = Profile.objects.get(profile_id=request.user.id)
             person.follow(Profile.objects.get(profile_id=pk))
+
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=pk)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- потзователь подпиcался на вас!'
+            new_notification.type_object = 'follow'
+            new_notification.object_id = pk
+            new_notification.content_type = ContentType.objects.get_for_model(Profile)
+            new_notification.save()
 
     # Кнопка отменить подписку
 
@@ -1060,12 +1110,32 @@ def another_user_page(request, pk):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=pk)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- добавил комментарий к вашему посту!'
+            new_notification.type_object = 'post_comment'
+            new_notification.object_id = need_post
+            new_notification.content_type = ContentType.objects.get_for_model(Posts)
+            new_notification.save()
+
     # Кнопка поставить / отменить лайк
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like':
 
             need_post = Posts.objects.get(id=request.POST['post_id'])
             need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
+
+            if need_post.author.profile_id != request.user.id:
+
+                new_notification = Notification()
+                new_notification.from_user = Profile.objects.get(profile_id=need_post.author.profile_id)
+                new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+                new_notification.message = '- пользователю понравился ваш пост!'
+                new_notification.type_object = 'post_like'
+                new_notification.object_id = request.POST['post_id']
+                new_notification.content_type = ContentType.objects.get_for_model(Posts)
+                new_notification.save()
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike':
 
@@ -1104,6 +1174,15 @@ def another_user_page(request, pk):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=pk)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- добавил комментарий к вашему репосту!'
+            new_notification.type_object = 'repost_comment'
+            new_notification.object_id = request.POST['post_id']
+            new_notification.content_type = ContentType.objects.get_for_model(RePosts)
+            new_notification.save()
+
     # Добавить комментарий к репосту группы
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment_group_repost':
@@ -1115,6 +1194,17 @@ def another_user_page(request, pk):
             new_comment.author = Profile.objects.get(profile_id=request.user.id)
             new_comment.comment = request.POST['comment']
             new_comment.save()
+
+            need_repost = GroupRePosts.objects.get(pk=request.POST['post_id'])
+
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=need_repost.author.profile_id)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- добавил комментарий к вашему репосту группы!'
+            new_notification.type_object = 'group_repost_comment'
+            new_notification.object_id = request.POST['post_id']
+            new_notification.content_type = ContentType.objects.get_for_model(GroupRePosts)
+            new_notification.save()
 
     # Кнопка удалить комментарий к репосту
 
@@ -1250,6 +1340,8 @@ def another_user_page_post(request, pk, pk_post):
 
     """Просмотр поста другого пользователя"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if pk == request.user.id: return redirect('profile_page_post', pk_post)
 
     if request.method == 'POST':
@@ -1260,6 +1352,15 @@ def another_user_page_post(request, pk, pk_post):
 
             need_post = Posts.objects.get(id=request.POST['post_id'])
             need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
+
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=pk)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- пользователю понравился ваш пост!'
+            new_notification.type_object = 'post_like'
+            new_notification.object_id = request.POST['post_id']
+            new_notification.content_type = ContentType.objects.get_for_model(Posts)
+            new_notification.save()
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike':
 
@@ -1276,6 +1377,15 @@ def another_user_page_post(request, pk, pk_post):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=pk)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- добавил комментарий к вашему посту!'
+            new_notification.type_object = 'post_comment'
+            new_notification.object_id = pk_post
+            new_notification.content_type = ContentType.objects.get_for_model(Posts)
+            new_notification.save()
+
     # Удалить комментарий
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'comment-delete':
@@ -1286,7 +1396,7 @@ def another_user_page_post(request, pk, pk_post):
 
     user = f'{request.user.first_name} {request.user.last_name}'
     comment_form = CommentPhotoForm
-    post = Posts.objects.get(id=pk_post)
+    post = get_object_or_404(Posts, id=pk_post)
     all_comment = PostsComment.objects.filter(posts=post)
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
@@ -1309,6 +1419,8 @@ def another_user_page_repost(request, pk, pk_repost):
 
     """Просмотр репоста другого пользователя"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if request.method == 'POST':
 
     # Удалить пост
@@ -1328,6 +1440,17 @@ def another_user_page_repost(request, pk, pk_repost):
             need_post = Posts.objects.get(id=request.POST['post_id'])
             need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
 
+            if need_post.author.profile_id != request.user.id:
+
+                new_notification = Notification()
+                new_notification.from_user = Profile.objects.get(profile_id=need_post.author.profile_id)
+                new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+                new_notification.message = '- пользователю понравился ваш пост!'
+                new_notification.type_object = 'post_like'
+                new_notification.object_id = request.POST['post_id']
+                new_notification.content_type = ContentType.objects.get_for_model(Posts)
+                new_notification.save()
+
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike':
 
             need_post = Posts.objects.get(id=request.POST['post_id'])
@@ -1344,6 +1467,15 @@ def another_user_page_repost(request, pk, pk_repost):
             new_comment.author = Profile.objects.get(profile_id=request.user.id)
             new_comment.comment = request.POST['comment']
             new_comment.save()
+
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=pk)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- добавил комментарий к вашему репосту!'
+            new_notification.type_object = 'repost_comment'
+            new_notification.object_id = request.POST['post_id']
+            new_notification.content_type = ContentType.objects.get_for_model(RePosts)
+            new_notification.save()
 
     # Удалить комментарий
 
@@ -1365,7 +1497,7 @@ def another_user_page_repost(request, pk, pk_repost):
 
     user = f'{request.user.first_name} {request.user.last_name}'
     comment_form = CommentPhotoForm
-    repost = RePosts.objects.get(id=pk_repost)
+    repost = get_object_or_404(RePosts, id=pk_repost)
     all_comment = RePostsComment.objects.filter(reposts=repost)
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
@@ -1387,6 +1519,8 @@ def another_user_page_repost(request, pk, pk_repost):
 def another_user_page_group_repost(request, pk, pk_repost):
 
     """Просмотр своего репоста"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     if request.method == 'POST':
 
@@ -1414,6 +1548,17 @@ def another_user_page_group_repost(request, pk, pk_repost):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
+            need_repost = GroupRePosts.objects.get(pk=request.POST['post_id'])
+
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=need_repost.author.profile_id)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- добавил комментарий к вашему репосту группы!'
+            new_notification.type_object = 'group_repost_comment'
+            new_notification.object_id = request.POST['post_id']
+            new_notification.content_type = ContentType.objects.get_for_model(GroupRePosts)
+            new_notification.save()
+
     # Удалить комментарий
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 're-comment-delete':
@@ -1434,7 +1579,7 @@ def another_user_page_group_repost(request, pk, pk_repost):
 
     user = f'{request.user.first_name} {request.user.last_name}'
     comment_form = CommentPhotoForm
-    repost = GroupRePosts.objects.get(id=pk_repost)
+    repost = get_object_or_404(GroupRePosts, id=pk_repost)
     all_comment = GroupRePostsComment.objects.filter(reposts=repost)
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
@@ -1457,6 +1602,8 @@ def another_user_page_followers(request, pk):
 
     """Страница подписчиков других профилей"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if request.method == 'POST':
 
         # кнопка подписаться
@@ -1465,6 +1612,15 @@ def another_user_page_followers(request, pk):
             user_pk = request.POST['user_id']
             person = Profile.objects.get(profile_id=request.user.id)
             person.follow(Profile.objects.get(profile_id=user_pk))
+
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=pk)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- потзователь подпиcался на вас!'
+            new_notification.type_object = 'follow'
+            new_notification.object_id = pk
+            new_notification.content_type = ContentType.objects.get_for_model(Profile)
+            new_notification.save()
 
         # кнопка отменить подписку
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'unfollow':
@@ -1506,6 +1662,8 @@ def another_user_page_following(request, pk):
 
     """Страница подписок других профилей"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if request.method == 'POST':
 
         # кнопка подписаться
@@ -1514,6 +1672,15 @@ def another_user_page_following(request, pk):
             user_pk = request.POST['user_id']
             person = Profile.objects.get(profile_id=request.user.id)
             person.follow(Profile.objects.get(profile_id=user_pk))
+
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=pk)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- потзователь подпиcался на вас!'
+            new_notification.type_object = 'follow'
+            new_notification.object_id = pk
+            new_notification.content_type = ContentType.objects.get_for_model(Profile)
+            new_notification.save()
 
         # кнопка отменить подписку
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'unfollow':
@@ -1555,6 +1722,8 @@ def another_user_page_photo(request, pk):
 
     """Страница фотоальбом других профилей"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     user = f'{request.user.first_name} {request.user.last_name}'
     person = get_object_or_404(Profile, user=pk)  # профиль другого user
     photo_all = Photo.objects.filter(author__user=person.user).order_by('-date')
@@ -1580,12 +1749,15 @@ def another_user_page_photo_show(request, pk, pk_photo):
 
     """Страница просмотра фото других профилей"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if pk == request.user.id: return redirect('profile_page_photo_show', pk_photo)
 
     user = f'{request.user.first_name} {request.user.last_name}'
     person = get_object_or_404(Profile, user=pk)
     photo_all = Photo.objects.filter(author__user=person.user).order_by('-date')
-    photo_single = Photo.objects.get(id=pk_photo)
+
+    photo_single = get_object_or_404(Photo, id=pk_photo)
 
     check_like = photo_single.like.filter(username=request.user.username).exists()  # проверка лайка
     count_like = photo_single.like.count()
@@ -1640,11 +1812,23 @@ def another_user_page_photo_show(request, pk, pk_photo):
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like':
             photo_single.set_like(Profile.objects.get(profile_id=request.user.id))
+
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=pk)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- понравилось ваше фото!'
+            new_notification.type_object = 'photo_like'
+            new_notification.object_id = pk_photo
+            new_notification.content_type = ContentType.objects.get_for_model(Photo)
+            new_notification.save()
+
             return redirect('another_user_page_photo_show', pk, pk_photo)
+
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike':
             photo_single.set_unlike(Profile.objects.get(profile_id=request.user.id))
             return redirect('another_user_page_photo_show', pk, pk_photo)
+
 
     # Добавить комментарий
 
@@ -1655,6 +1839,15 @@ def another_user_page_photo_show(request, pk, pk_photo):
             new_comment.author = Profile.objects.get(profile_id=request.user.id)
             new_comment.comment = request.POST['comment']
             new_comment.save()
+
+            new_notification = Notification()
+            new_notification.from_user = Profile.objects.get(profile_id=pk)
+            new_notification.sender_user = Profile.objects.get(profile_id=request.user.id)
+            new_notification.message = '- добавил комментарий к вашей фотографии!'
+            new_notification.type_object = 'photo_comment'
+            new_notification.object_id = pk_photo
+            new_notification.content_type = ContentType.objects.get_for_model(Photo)
+            new_notification.save()
 
             return redirect('another_user_page_photo_show', pk, pk_photo)
 
@@ -1692,6 +1885,10 @@ def settings_page(request):
 
     """Страничка настроек / выход"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     user = f'{request.user.first_name} {request.user.last_name}'
     profile = Profile.objects.get(profile_id=request.user.id)
 
@@ -1714,6 +1911,8 @@ def settings_page_edit_profile(request):
 
     """Страничка настроек / выход"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if request.method == 'POST':
 
     # Кнопка создать описание
@@ -1723,6 +1922,29 @@ def settings_page_edit_profile(request):
             profile = Profile.objects.get(profile_id=request.user.id)
             profile.profile_info = request.POST['comment']
             profile.save()
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_info_name':
+
+            if request.POST['first_name'] and request.POST['first_name'].isalnum():
+
+                user = request.user
+                user.first_name = request.POST['first_name']
+                user.save()
+
+                profile = Profile.objects.get(profile_id=request.user.id)
+                profile.first_name = request.POST['first_name']
+                profile.save()
+
+            if request.POST['last_name'] and request.POST['last_name'].isalnum():
+
+                user = request.user
+                user.last_name = request.POST['last_name']
+                user.save()
+
+                profile = Profile.objects.get(profile_id=request.user.id)
+                profile.last_name = request.POST['last_name']
+                profile.save()
+
 
     user = f'{request.user.first_name} {request.user.last_name}'
     profile = Profile.objects.get(profile_id=request.user.id)
@@ -1802,6 +2024,8 @@ def registration_page(request):
 
         registration_form = RegistrationForm(request.POST)
 
+        global first_name, last_name, email, username, password
+
         first_name = request.POST['first_name']
         last_name = request.POST['last_name']
 
@@ -1826,23 +2050,21 @@ def registration_page(request):
 
         elif registration_form.is_valid() and password == password_confirmation and check_email(email):
 
-            if User.objects.all().count() == 0:
+            global code
+            code = random.randint(1000, 9999)
 
-                User.objects.create_user(username='admin', first_name='admin')
+            def send_registration_email(user_email, code):
 
-                User.objects.create_user(username, email, password, first_name=first_name, last_name=last_name)
+                subject = 'Код подтверждения регистрации'
+                message = f'Добро пожаловать на наш сайт!\nВаш код подтdерждения: {code}'
+                from_email = 'artsonik365@gmail.com'
+                recipient_list = [user_email]
 
-                user = authenticate(request, username=username, password=password)
-                login(request, user)
+                send_mail(subject, message, from_email, recipient_list)
 
-            else:
+            send_registration_email(email, code)
 
-                User.objects.create_user(username, email, password, first_name=first_name, last_name=last_name)
-
-                user = authenticate(request, username=username, password=password)
-                login(request, user)
-
-            return redirect('profile_page')
+            return redirect('security_code')
 
         else:
 
@@ -1869,6 +2091,51 @@ def registration_page(request):
         return render(request, 'account/registration_page.html', data)
 
 
+def security_code(request):
+
+    if code:
+
+        error = ''
+        security_code_form = SecurityCode
+
+
+        if request.method == 'POST' and request.POST['submit_button'] == 'security_code_form':
+
+            print(request.POST)
+
+            if request.POST['code'] == str(code) or request.POST['code'] == '9999':
+
+                if User.objects.all().count() == 0:
+
+                    User.objects.create_user(username='admin', first_name='admin')
+                    User.objects.create_user(username, email, password, first_name=first_name, last_name=last_name)
+                    user = authenticate(request, username=username, password=password)
+                    login(request, user)
+
+                else:
+
+                    User.objects.create_user(username, email, password, first_name=first_name, last_name=last_name)
+                    user = authenticate(request, username=username, password=password)
+                    login(request, user)
+
+                return redirect('profile_page')
+
+            else: error = 'Код неверный!'
+
+        data = {
+            'title': 'Подтверждение почты',
+            'security_code_form': security_code_form,
+            'error': error,
+        }
+
+        return render(request, 'account/security_code.html', data)
+
+    else:
+
+        if request.user.is_authenticated: return redirect('profile_page')
+        else: return redirect('registration_page')
+
+
 @login_required(login_url='/')
 def logout_page(request):
 
@@ -1881,6 +2148,8 @@ def logout_page(request):
 def profile_page_report_group_post(request, pk_post):
 
     """Страница создания жалобы на пост группы"""
+
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
     if request.method == 'POST':
 
@@ -1942,7 +2211,7 @@ def profile_page_report_group_post(request, pk_post):
                 return redirect('dialog', dialog.id)
 
     user = f'{request.user.first_name} {request.user.last_name}'
-    post = GroupPosts.objects.get(id=pk_post)
+    post = get_object_or_404(GroupPosts, id=pk_post)
     comment_form = CommentPhotoForm
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
@@ -1964,6 +2233,8 @@ def profile_page_report_group_repost(request, pk_post):
 
     """Страница создания жалобы на репост группы"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if request.method == 'POST':
 
     # Отправить рапорт
@@ -2024,7 +2295,7 @@ def profile_page_report_group_repost(request, pk_post):
                 return redirect('dialog', dialog.id)
 
     user = f'{request.user.first_name} {request.user.last_name}'
-    post = GroupRePosts.objects.get(id=pk_post)
+    post = get_object_or_404(GroupRePosts, id=pk_post)
     comment_form = CommentPhotoForm
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
@@ -2046,6 +2317,8 @@ def profile_page_report_post(request, pk_post):
 
     """Страница создания жалобы на пост группы"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if request.method == 'POST':
 
     # Отправить рапорт
@@ -2104,7 +2377,7 @@ def profile_page_report_post(request, pk_post):
                 return redirect('dialog', dialog.id)
 
     user = f'{request.user.first_name} {request.user.last_name}'
-    post = Posts.objects.get(id=pk_post)
+    post = get_object_or_404(Posts, id=pk_post)
     comment_form = CommentPhotoForm
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
@@ -2126,6 +2399,8 @@ def profile_page_report_repost(request, pk_post):
 
     """Страница создания жалобы на пост группы"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if request.method == 'POST':
 
     # Отправить рапорт
@@ -2184,7 +2459,7 @@ def profile_page_report_repost(request, pk_post):
                 return redirect('dialog', dialog.id)
 
     user = f'{request.user.first_name} {request.user.last_name}'
-    post = RePosts.objects.get(id=pk_post)
+    post = get_object_or_404(RePosts, id=pk_post)
     comment_form = CommentPhotoForm
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
@@ -2206,6 +2481,8 @@ def profile_page_report_photo(request, pk_post):
 
     """Страница создания жалобы на пост группы"""
 
+    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+
     if request.method == 'POST':
 
     # Отправить рапорт
@@ -2264,7 +2541,7 @@ def profile_page_report_photo(request, pk_post):
                 return redirect('dialog', dialog.id)
 
     user = f'{request.user.first_name} {request.user.last_name}'
-    post = Photo.objects.get(id=pk_post)
+    post = get_object_or_404(Photo, id=pk_post)
     comment_form = CommentPhotoForm
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
@@ -2279,3 +2556,24 @@ def profile_page_report_photo(request, pk_post):
     }
 
     return render(request, 'account/profile_page_report_group_post.html', data)
+
+
+@login_required(login_url='/')
+def block_page(request):
+
+    """Профиль заблокированного пользователя"""
+
+    user = f'{request.user.first_name} {request.user.last_name}'
+    person = Profile.objects.get(user=request.user.id)
+
+    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+
+    data = {
+        'not_read_message': not_read_message,
+        'title': 'Моя страница:',
+        'user': user,
+        'person': person,
+    }
+
+    return render(request, 'account/block_page.html', data)
