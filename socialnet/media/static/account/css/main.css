@@ -934,27 +934,31 @@ input[type="file"]::before {
     border-radius: 10px;
     border-color: transparent;
     background-color: RGB(220, 220, 220);
-    cursor: pointer; /* Изменить курсор при наведении */
+    cursor: pointer;
     z-index: 9999;
-    justify-content: center;
-    cursor: pointer; /* Изменить курсор при наведении */
+    cursor: pointer;
     display: flex;
     color: white;
+    justify-content: space-evenly;
+    align-content: stretch;
+
 }
 
 /* Вывод записей в ленте кнопка удалить комментарий при наведении */
 .delete-post:hover {
-    width: 20px;
+width: 20px;
     height: 20px;
     border-radius: 10px;
     border-color: transparent;
     background-color: red;
-    cursor: pointer; /* Изменить курсор при наведении */
+    cursor: pointer;
     z-index: 9999;
-    justify-content: center;
-    cursor: pointer; /* Изменить курсор при наведении */
+    cursor: pointer;
     display: flex;
     color: white;
+    justify-content: space-evenly;
+    align-content: stretch;
+
 }
 
 /* Вывод записей в ленте кнопка удалить комментарий */
@@ -993,7 +997,7 @@ input[type="file"]::before {
 .view-post P {
     color: white;
     text-align: center;
-    margin-top: 2px;
+    margin-top: 50%;
     margin-left: 1px;
     font-size: 10px;
 }
@@ -1006,12 +1010,13 @@ input[type="file"]::before {
     border-radius: 10px;
     border-color: transparent;
     background-color: RGB(220, 220, 220);
-    cursor: pointer; /* Изменить курсор при наведении */
+    cursor: pointer;
     z-index: 9999;
-    justify-content: center;
-    cursor: pointer; /* Изменить курсор при наведении */
+    justify-content: space-evenly;
+    cursor: pointer;
     display: flex;
     color: white;
+    align-items: stretch;
 }
 
 /* Вывод записей в ленте кнопка удалить комментарий при наведении */
@@ -1021,11 +1026,13 @@ input[type="file"]::before {
     border-radius: 10px;
     border-color: transparent;
     background-color: orange;
+    cursor: pointer;
     z-index: 9999;
-    justify-content: center;
-    cursor: pointer; /* Изменить курсор при наведении */
+    justify-content: space-evenly;
+    cursor: pointer;
     display: flex;
     color: white;
+    align-items: stretch;
 }
 
 /* Вывод записей в ленте кнопка удалить комментарий */
@@ -1775,12 +1782,13 @@ input[type="file"]::before {
     border-radius: 10px;
     border-color: transparent;
     background-color: RGB(220, 220, 220);
-    cursor: pointer; /* Изменить курсор при наведении */
+    cursor: pointer;
     z-index: 9999;
-    justify-content: center;
-    cursor: pointer; /* Изменить курсор при наведении */
+    justify-content: space-evenly;
+    cursor: pointer;
     display: flex;
     color: white;
+    align-items: stretch;
 }
 
 /* Вывод всех комментариев кнопка удалить комментарий при наведении */
@@ -1790,12 +1798,13 @@ input[type="file"]::before {
     border-radius: 10px;
     border-color: transparent;
     background-color: orange;
-    cursor: pointer; /* Изменить курсор при наведении */
+    cursor: pointer;
     z-index: 9999;
-    justify-content: center;
-    cursor: pointer; /* Изменить курсор при наведении */
+    justify-content: space-evenly;
+    cursor: pointer;
     display: flex;
     color: white;
+    align-items: stretch;
 }
 
 /* Вывод всех комментариев кнопка удалить комментарий */
@@ -2684,6 +2693,7 @@ input[type="file"]::before {
     cursor: pointer; /* Изменить курсор при наведении */
     z-index: 9999;
     justify-content: center;
+    align-items: center;
     cursor: pointer; /* Изменить курсор при наведении */
     display: flex;
     color: white;
