@@ -287,11 +287,25 @@
                 {% csrf_token %}
                 {{ posts_form.content }}
                 <button id="summbit-button" type="submit" name="submit_button" value="create_post">Создать запись</button>
-                <input type="file" name="photo_post" multiple>
+                <input id="photo-input" type="file" name="photo_post" multiple onchange="changeColor(this)">
+
             </form>
 
             </div>
         </div>
+
+        <script>
+        function changeColor(input) {
+            var fileInput = input.files[0]; // Получаем выбранный файл
+            var photoContainer = document.querySelector('.posts-create');
+
+            if (fileInput) {
+                photoContainer.classList.add('file-selected'); // Добавляем класс, если выбран файл
+            } else {
+                photoContainer.classList.remove('file-selected'); // Удаляем класс, если файл не выбран
+            }
+        }
+        </script>
 
     {% else %}
 

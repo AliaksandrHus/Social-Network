@@ -2053,16 +2053,16 @@ def registration_page(request):
             global code
             code = random.randint(1000, 9999)
 
-            def send_registration_email(user_email, code):
-
-                subject = 'Код подтверждения регистрации'
-                message = f'Добро пожаловать на наш сайт!\nВаш код подтdерждения: {code}'
-                from_email = 'artsonik365@gmail.com'
-                recipient_list = [user_email]
-
-                send_mail(subject, message, from_email, recipient_list)
-
-            send_registration_email(email, code)
+            # def send_registration_email(user_email, code):
+            #
+            #     subject = 'Код подтверждения регистрации'
+            #     message = f'Добро пожаловать на наш сайт!\nВаш код подтdерждения: {code}'
+            #     from_email = 'artsonik365@gmail.com'
+            #     recipient_list = [user_email]
+            #
+            #     send_mail(subject, message, from_email, recipient_list)
+            #
+            # send_registration_email(email, code)
 
             return redirect('security_code')
 
