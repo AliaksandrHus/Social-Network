@@ -24,17 +24,17 @@ window.addEventListener('load', function() {
 
 
 
-window.addEventListener('load', function() {
-    const submitBtn = document.querySelector('#submitBtn');
-
-    if (submitBtn) { // проверяем, существует ли элемент на странице
-        window.addEventListener('scroll', function() {
-            if (window.scrollY + window.innerHeight === document.documentElement.scrollHeight) {
-                submitBtn.click();
-            }
-        });
-    }
-});
+//window.addEventListener('load', function() {
+//    const submitBtn = document.querySelector('#submitBtn');
+//
+//    if (submitBtn) { // проверяем, существует ли элемент на странице
+//        window.addEventListener('scroll', function() {
+//            if (window.scrollY + window.innerHeight === document.documentElement.scrollHeight) {
+//                submitBtn.click();
+//            }
+//        });
+//    }
+//});
 
 
 
