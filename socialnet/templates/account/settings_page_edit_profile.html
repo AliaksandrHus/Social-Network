@@ -39,6 +39,10 @@
     <div class="standard">
         <p>Имя и фаммилия:</p>
 
+    <div class="profile-info">
+        {{ user }}
+    </div>
+
     <div class="photo-comment">
         <form method="post">
             {% csrf_token %}

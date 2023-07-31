@@ -5,6 +5,10 @@
 
 {% block content %}
 
+        <div class="standard">
+            <h3>Что будем искать?</h3>
+        </div>
+
         <div class="search_field">
             <form method="post">
                 {% csrf_token %}
@@ -12,6 +16,8 @@
                 <button type="submit" name="submit_button" value="start_search">Найти</button>
             </form>
         </div>
+
+    <div class="invisible-rectangle"></div>
 
     {% if search_people or post_and_repost or group %}
 

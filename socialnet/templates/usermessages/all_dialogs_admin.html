@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base-useradmin.html' %}
 
 {% load static %}
 
@@ -64,19 +64,6 @@
 
     {% endif %}
 
-<script>
-
-    setInterval(function() {
-      var menuMessage = document.getElementById("menu-message").innerHTML;
-      var previousMessage = localStorage.getItem("previousMessage");
-
-      if (menuMessage !== previousMessage) {
-        localStorage.setItem("previousMessage", menuMessage);
-        location.reload();
-      }
-    }, 1000);
-
-</script>
 
 
 {% endblock %}

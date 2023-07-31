@@ -26,7 +26,15 @@
         <div class="posts-all-container">
                 <a href="/user-{{ post.post.author.profile_id }}"><img src="{{ post.post.author.avatar.url }}"></a>
             <div class="posts-comment-user-date">
-                <a href="/user-{{ post.post.author.profile_id }}">{{ post.post.author }}</a>
+                <a href="/user-{{ post.post.author.profile_id }}">
+
+                    {% if post.post.author.profile_id != 1 %}
+                        {{ post.post.author }}
+                    {% else %}
+                        Системное сообщение
+                    {% endif %}
+
+                </a>
                 <span class="posts-comment-date">{{ post.post.date }}</span>
             </div>
         </div>

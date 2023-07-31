@@ -24,21 +24,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-9g06=@!_my4)n*(d^tu^mwrhqphlin%5enq&7z@j6dgx_s@5h3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'account',
     'groups',
     'news',
@@ -77,6 +77,21 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'socialnet.wsgi.application'
+ASGI_APPLICATION = 'socialnet.asgi.application'
+
+# CELERY
+
+CELERY_BROKER_URL = "redis://localhost:6379"
+CELERY_RESULT_BACKEND = "redis://localhost:6379"
+
+# CHANNELS
+
+CHANNEL_LAYERS = { 'default': {
+                    'BACKEND': 'channels_redis.core.RedisChannelLayer',
+                    'CONFIG': {
+                    'hosts': [('127.0.0.1', 6379)],
+                    }, },
+                    }
 
 
 # Database

@@ -26,13 +26,13 @@
             <div class="all-dialog-list">
 
                 {% if dialog.last_message.read %}
-                <a href="/useradmin/dialog-{{ dialog.id }}"><img src="{{ dialog.another_user.avatar.url }}"></a>
+                <a href="/messages/dialog-{{ dialog.id }}"><img src="{{ dialog.another_user.avatar.url }}"></a>
                 {% else %}
-                <a href="/useradmin/dialog-{{ dialog.id }}"><img id="not-read-message" src="{{ dialog.another_user.avatar.url }}"></a>
+                <a href="/messages/dialog-{{ dialog.id }}"><img id="not-read-message" src="{{ dialog.another_user.avatar.url }}"></a>
                 {% endif %}
 
                     <div class="photo-comment-user-date">
-                        <a href="/useradmin/dialog-{{ dialog.id }}">
+                        <a href="/messages/dialog-{{ dialog.id }}">
                             {{ dialog.another_user.first_name }} {{ dialog.another_user.last_name }}</a>
                             <span class="photo-comment-date">{{ dialog.last_message_time }}</span>
                     </div>
@@ -62,6 +62,10 @@
 
 
     {% for message in messages %}
+
+            {% if message.send_post or message.send_group_post or message.send_repost or message.send_group_repost %}
+                <br>
+            {% endif %}
 
     <div class="message-all-comment">
         <a href="/useradmin/user-{{ message.author.profile_id }}">
@@ -430,7 +434,15 @@
                 <div class="posts-all-container">
                         <a href="/useradmin/user-{{ post.author.profile_id }}{{ message.send_post.author.profile_id }}"><img src="{{ message.send_post.author.avatar.url }}"></a>
                     <div class="posts-comment-user-date">
-                        <a href="/useradmin/user-{{ post.author.profile_id }}{{ message.send_post.author.profile_id }}">{{ message.send_post.author }}</a>
+                        <a href="/useradmin/user-{{ post.author.profile_id }}{{ message.send_post.author.profile_id }}">
+
+                            {% if message.send_post.author.profile_id != 1 %}
+                                {{ message.send_post.author }}
+                            {% else %}
+                                Системное сообщение
+                            {% endif %}
+
+                        </a>
                         <span class="posts-comment-date">{{ message.send_post.date }}</span>
                     </div>
                 </div>
@@ -601,7 +613,15 @@
                         <a href="/useradmin/user-{{ message.send_repost.post.author.profile_id }}">
                             <img src="{{ message.send_repost.post.author.avatar.url }}"></a>
                     <div class="posts-comment-user-date">
-                        <a href="/useradmin/user-{{ message.send_repost.post.author.profile_id }}">{{ message.send_repost.post.author }}</a>
+                        <a href="/useradmin/user-{{ message.send_repost.post.author.profile_id }}">
+
+                            {% if message.send_repost.post.author.profile_id != 1 %}
+                                {{ message.send_repost.post.author }}
+                            {% else %}
+                                Системное сообщение
+                            {% endif %}
+
+                        </a>
                         <span class="posts-comment-date">{{ message.send_repost.post.date }}</span>
                     </div>
                 </div>
@@ -805,6 +825,114 @@
             }
         }
         </script>
+
+<script>
+
+    document.getElementById('message-form').addEventListener('submit', function(event) {
+      var content = document.getElementById('id_content').value;
+      var file = document.getElementById('photo-input').files[0];
+
+      if (content.trim() === '' && file === undefined) {
+        event.preventDefault();
+      }
+    });
+
+</script>
+
+<script>
+
+    // Получаем форму и поле ввода
+    var form = document.querySelector('.posts-create-message form');
+    var input = form.querySelector('textarea');
+
+    // Проверяем, есть ли сохраненные данные в localStorage
+    if (localStorage.getItem('savedContent')) {
+      // Восстанавливаем сохраненные данные в поле ввода
+      input.value = localStorage.getItem('savedContent');
+    }
+
+    // Слушаем событие ввода текста
+    input.addEventListener('input', function() {
+      // Сохраняем данные в localStorage при вводе текста
+      localStorage.setItem('savedContent', input.value);
+    });
+
+    // Слушаем событие отправки формы
+    form.addEventListener('submit', function() {
+      // Очищаем сохраненные данные при отправке формы
+      localStorage.removeItem('savedContent');
+    });
+
+</script>
+
+<script>
+
+    setInterval(function() {
+      var menuMessage = document.getElementById("menu-message").innerHTML;
+      var previousMessage = localStorage.getItem("previousMessage");
+
+      if (menuMessage !== previousMessage) {
+        localStorage.setItem("previousMessage", menuMessage);
+        location.reload();
+      }
+    }, 1000);
+
+</script>
+
+    <textarea id="chat-log" cols="100" rows="20" style="display:none;"></textarea><br>
+    <input id="chat-message-input" type="text" size="100" style="display:none;"><br>
+    <input id="chat-message-submit" type="button" value="Send" style="display:none;">
+
+<script>
+
+    const dialogId = "{{ dialog.id }}";
+
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/messages/dialog-'
+        + dialogId
+        + '/'
+    );
+
+    // Обработчик события открытия соединения
+    chatSocket.onopen = () => {
+       console.log('WebSocket connection opened');
+    };
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        document.querySelector('#chat-log').value += (data.message + '\n');
+
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#summbit-button').onclick = function(e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+        chatSocket.send(JSON.stringify({
+            'message': message
+        }));
+        messageInputDom.value = '';
+
+    };
+
+</script>
+
 
 
 {% endblock %}

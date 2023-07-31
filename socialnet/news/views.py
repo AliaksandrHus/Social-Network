@@ -48,6 +48,8 @@ def news(request):
             new_notification.content_type = ContentType.objects.get_for_model(Posts)
             new_notification.save()
 
+            return redirect('news')
+
     # Добавить комментарий к посту группы
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment_group':
@@ -59,6 +61,8 @@ def news(request):
             new_comment.author = Profile.objects.get(profile_id=request.user.id)
             new_comment.comment = request.POST['comment']
             new_comment.save()
+
+            return redirect('news')
 
     # Кнопка поставить / отменить лайк
 
@@ -142,6 +146,8 @@ def news(request):
             new_notification.content_type = ContentType.objects.get_for_model(RePosts)
             new_notification.save()
 
+            return redirect('news')
+
     # Кнопка удалить комментарий к репосту
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 're-comment-delete':
@@ -173,6 +179,8 @@ def news(request):
             new_notification.content_type = ContentType.objects.get_for_model(GroupRePosts)
             new_notification.save()
 
+            return redirect('news')
+
     user = f'{request.user.first_name} {request.user.last_name}'
     following = Profile.objects.get(user=request.user.id).following.all()
     comment_form = CommentPhotoForm
@@ -193,6 +201,9 @@ def news(request):
 
     group_posts = GroupPosts.objects.filter(author__followers=request.user)
     post_and_repost += group_posts
+
+    notification = Posts.objects.filter(author__profile_id=1)
+    post_and_repost += notification
 
     post_and_repost = sorted(post_and_repost, key=lambda x: x.date, reverse=True)
 
