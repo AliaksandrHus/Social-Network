@@ -28,11 +28,11 @@
         <div class="menu">
 
             {% if not_read_message %}
-                <a href="{% url 'dialog_all' %}">ЛЕНТА<span id="menu-message">{{ not_read_message }}</span></a>
+                <a href="{% url 'all_messages' %}">ЛЕНТА<span id="menu-message">{{ not_read_message }}</span></a>
             {% else %}
-                <a href="{% url 'dialog_all' %}">ЛЕНТА</a>
+                <a href="{% url 'all_messages' %}">ЛЕНТА</a>
             {% endif %}
-                <a href="">ОПОВЕЩЕНИЕ</a>
+                <a href="{% url 'create_notification' %}">ОПОВЕЩЕНИЕ</a>
                 <a href="{% url 'admin_search' %}">ПОИСК</a>
 
         </div>

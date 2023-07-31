@@ -28,8 +28,7 @@ def groups(request):
 
     if request.method == 'POST':
 
-
-    # Кнопка создать пост в ленте
+    # Кнопка создать группу
 
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'create_group':
 
@@ -37,6 +36,8 @@ def groups(request):
             new_group.user = request.user
             new_group.first_name = request.POST['comment']
             new_group.save()
+
+            return redirect('groups')
 
     user = f'{request.user.first_name} {request.user.last_name}'
     comment_form = CommentPhotoForm
@@ -100,6 +101,8 @@ def group_view(request, group_id):
                     new_post.add_photo_in_post(photo)
                     new_post.save()
 
+            return redirect('group_view', group_id)
+
     # Кнопка удалить пост
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'posts-delete':
@@ -143,6 +146,8 @@ def group_view(request, group_id):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
+            return redirect('group_view', group_id)
+
     # Добавить комментарий к посту
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment':
@@ -154,6 +159,8 @@ def group_view(request, group_id):
             new_comment.author = Profile.objects.get(profile_id=request.user.id)
             new_comment.comment = request.POST['comment']
             new_comment.save()
+
+            return redirect('group_view', group_id)
 
     # Кнопка удалить комментарий - от создателя
 
@@ -224,6 +231,8 @@ def group_view(request, group_id):
             group = Group.objects.get(profile_id=group_id)
             group.group_info = request.POST['comment']
             group.save()
+
+            return redirect('group_view', group_id)
 
     all_photo = GroupPhoto.objects.filter(author=group_id).order_by('-date')
 
@@ -608,6 +617,8 @@ def groups_photo_show(request, group_id, pk_photo):
             photo_single.description = request.POST['description']
             photo_single.save()
 
+            return redirect('groups_photo_show', group_id, pk_photo)
+
     # Поставить / отменить лайк
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like':
@@ -628,6 +639,8 @@ def groups_photo_show(request, group_id, pk_photo):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
+            return redirect('groups_photo_show', group_id, pk_photo)
+
     # Добавить комментарий к посту
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment':
@@ -637,6 +650,8 @@ def groups_photo_show(request, group_id, pk_photo):
             new_comment.author = Profile.objects.get(profile_id=request.user.id)
             new_comment.comment = request.POST['comment']
             new_comment.save()
+
+            return redirect('groups_photo_show', group_id, pk_photo)
 
     # Кнопка удалить комментарий - от создателя
 
@@ -727,6 +742,8 @@ def groups_post(request, group_id, pk_post):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
+            return redirect('groups_post', group_id, pk_post)
+
     # Добавить комментарий к посту
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment':
@@ -738,6 +755,8 @@ def groups_post(request, group_id, pk_post):
             new_comment.author = Profile.objects.get(profile_id=request.user.id)
             new_comment.comment = request.POST['comment']
             new_comment.save()
+
+            return redirect('groups_post', group_id, pk_post)
 
     # Кнопка удалить комментарий - от создателя
 

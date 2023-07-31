@@ -1644,7 +1644,10 @@ width: 20px;
 .comment-photo-textarea {
     font-family: 'Ubuntu Condensed', sans-serif;
     height: 27px;
+    min-height: 27px;
     width: calc(100% - 100px);
+    max-width: calc(100% - 100px);
+    min-width: calc(100% - 100px);
     margin-bottom: 10px;
     margin-right: 10px;
     border-color: RGB(230, 230, 230);
@@ -2168,7 +2171,10 @@ width: 20px;
 .post-create-textarea {
     font-family: 'Ubuntu Condensed', sans-serif;
     height: 27px;
+    min-height: 27px;
     width: calc(100% - 207px);
+    max-width: calc(100% - 207px);
+    min-width: calc(100% - 207px);
     /* margin-bottom: 10px; */
     border-color: RGB(230, 230, 230);
     border-radius: 3px;
@@ -2334,14 +2340,14 @@ width: 20px;
 /* Ввод статуса форма */
 .status {
     font-family: 'Ubuntu Condensed', sans-serif;
+    margin: 0 auto; /* Добавьте эту строку */
     margin-top: 10px;
     margin-bottom: -15px;
-    margin-right: 40%;
-    margin-left: 40%;
     padding: 5px;
     background-color: RGB(248, 248, 248);
-    border-radius: 20px;
+    border-radius: 15px;
     min-width: 250px;
+    max-width: 250px;
 }
 
 /* Ввод статуса форма */
@@ -2349,9 +2355,12 @@ width: 20px;
     font-family: 'Ubuntu Condensed', sans-serif;
     padding-left: 10px;
     border-color: white;
-    border-radius: 100px;
+    border-radius: 10px;
     width: calc(100% - 40px);
+    max-width: calc(100% - 40px);
+    min-width: calc(100% - 40px);
     height: 16px;
+    min-height: 16px;
     margin-bottom: -4px;
 }
 
@@ -2386,16 +2395,15 @@ width: 20px;
 }
 
 .triangle {
+    margin: 0 auto; /* Добавьте эту строку */
     margin-top: 13px;
-    margin-left: 44%;
-    margin-right: 50%;
     margin-bottom: -30px;
-    left: 50%;
     width: 0;
     height: 0;
     border-left: 50px solid transparent;
     border-right: 0px solid transparent;
     border-top: 15px solid RGB(248, 248, 248);
+    transform: translateX(-60px); /* Сдвиг на 100 пикселей влево относительно центра */
 }
 
 .status P {
@@ -2738,3 +2746,12 @@ width: 20px;
     cursor: pointer; /* Изменить курсор при наведении */
 }
 
+.invisible-rectangle {
+    display: flex;
+    margin-left: 25%;
+    margin-right: 25%;
+    width: 50%;
+    height: 1px;
+    background-color: transparent;
+    visibility: hidden;
+}

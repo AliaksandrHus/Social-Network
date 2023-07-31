@@ -30,6 +30,7 @@ urlpatterns = [
     path('group-<int:group_id>/photo', views.admin_groups_photo, name='admin_groups_photo'),
     path('group-<int:group_id>/photo/show-<int:pk_photo>', views.admin_groups_photo_show, name='admin_groups_photo_show'),
 
+    path('create_notification', views.create_notification, name='create_notification'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

@@ -66,4 +66,3 @@ class SecurityCode(forms.Form):
                                                                    'rows': 1,
                                                                    'class': 'security-code'}),
                                                                     max_length=4)
-

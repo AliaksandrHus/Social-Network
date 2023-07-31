@@ -5,6 +5,8 @@
 
 {% block content %}
 
+{% if person.profile_id != 1 %}
+
     {% if status %}
 
     <div class="status">
@@ -127,7 +129,7 @@
     {% if profile_info %}
 
     <div class="profile-info">
-        <h3>Описание вашего профиля:</h3>
+        <h3>Описание профиля:</h3>
             {{ profile_info }}
     </div>
 
@@ -216,6 +218,14 @@
     <div class="standard">
         <h3>Лента пользователя:</h3>
     </div>
+
+{% else %}
+
+    <div class="standard">
+        <h3>Все оповещения:</h3>
+    </div>
+
+{% endif %}
 
         {% for post in post_and_repost %}
 
@@ -437,7 +447,7 @@
 
                 </div>
 
-                <br>
+            <div class="invisible-rectangle"></div>
 
             {% elif post.type_object == 'RePosts' %}
 
@@ -479,7 +489,15 @@
                 <div class="posts-all-container">
                         <a href="/user-{{ post.post.author.profile_id }}"><img src="{{ post.post.author.avatar.url }}"></a>
                     <div class="posts-comment-user-date">
-                        <a href="/user-{{ post.post.author.profile_id }}">{{ post.post.author }}</a>
+                        <a href="/user-{{ post.post.author.profile_id }}">
+
+                        {% if post.post.author.profile_id != 1 %}
+                            {{ post.post.author }}
+                        {% else %}
+                            Системное сообщение
+                        {% endif %}
+
+                        </a>
                         <span class="posts-comment-date">{{ post.post.date }}</span>
                     </div>
                 </div>
@@ -659,7 +677,7 @@
 
                 </div>
 
-                <br>
+            <div class="invisible-rectangle"></div>
 
             {% elif post.type_object == 'Posts' %}
 
@@ -681,7 +699,15 @@
             <div class="posts-all-container">
                     <a href="/user-{{ post.author.profile_id }}"><img src="{{ post.author.avatar.url }}"></a>
                 <div class="posts-comment-user-date">
-                    <a href="/user-{{ post.author.profile_id }}">{{ post.author }}</a>
+                    <a href="/user-{{ post.author.profile_id }}">
+
+                        {% if post.author.profile_id != 1 %}
+                            {{ post.author }}
+                        {% else %}
+                            Системное сообщение
+                        {% endif %}
+
+                    </a>
                     <span class="posts-comment-date">{{ post.date }}</span>
                 </div>
             </div>
@@ -848,7 +874,7 @@
 
             </div>
 
-            <br>
+            <div class="invisible-rectangle"></div>
 
         {% endif %}
 

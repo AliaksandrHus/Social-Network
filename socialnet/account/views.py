@@ -19,6 +19,8 @@ import re
 
 from django.contrib.contenttypes.models import ContentType
 
+from socialnet.tasks import send_registration_email
+
 from django.core.mail import send_mail
 
 code = ''
@@ -83,6 +85,8 @@ def profile_page(request):
                         photo.save()
                         new_post.add_photo_in_post(photo)
                         new_post.save()
+
+            return redirect('profile_page')
 
     # Кнопка загрузки фото
 
@@ -163,6 +167,8 @@ def profile_page(request):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
+            return redirect('profile_page')
+
     # Добавить комментарий к репосту
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment_repost':
@@ -174,6 +180,8 @@ def profile_page(request):
             new_comment.author = Profile.objects.get(profile_id=request.user.id)
             new_comment.comment = request.POST['comment']
             new_comment.save()
+
+            return redirect('profile_page')
 
     # Добавить комментарий к репосту группы
 
@@ -187,6 +195,8 @@ def profile_page(request):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
+            return redirect('profile_page')
+
     # Кнопка удалить комментарий к репосту
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 're-comment-delete':
@@ -196,6 +206,7 @@ def profile_page(request):
             comment_delete.delete()
 
     # Кнопка удалить комментарий к репосту группы
+
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 're-comment-delete-group':
 
             comment_id = request.POST['comment_id']
@@ -217,7 +228,7 @@ def profile_page(request):
             profile.user_status = request.POST['status']
             profile.save()
 
-    # Кнопка удалить
+    # Кнопка удалить статус
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'delete_status':
 
@@ -343,6 +354,8 @@ def profile_page_post(request, pk_post):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
+            return redirect('profile_page_post', pk_post)
+
     # Удалить комментарий
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'comment-delete':
@@ -415,6 +428,8 @@ def profile_page_repost(request, pk_repost):
             new_comment.comment = request.POST['comment']
             new_comment.save()
 
+            return redirect('profile_page_repost', pk_repost)
+
     # Удалить комментарий
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 're-comment-delete':
@@ -485,7 +500,6 @@ def profile_page_group_repost(request, pk_repost):
             need_post = GroupPosts.objects.get(id=request.POST['post_id'])
             need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
 
-
     # Добавить комментарий
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment_repost':
@@ -497,6 +511,8 @@ def profile_page_group_repost(request, pk_repost):
             new_comment.author = Profile.objects.get(profile_id=request.user.id)
             new_comment.comment = request.POST['comment']
             new_comment.save()
+
+            return redirect('profile_page_group_repost', pk_repost)
 
     # Удалить комментарий
 
@@ -1011,6 +1027,8 @@ def profile_page_photo_show(request, pk_photo):
             photo_single.description = request.POST['description']
             photo_single.save()
 
+            return redirect('profile_page_photo_show', pk_photo)
+
     # Поставить / отменить лайк
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like':
@@ -1098,7 +1116,7 @@ def another_user_page(request, pk):
             person = Profile.objects.get(profile_id=request.user.id)
             person.unfollow(Profile.objects.get(profile_id=pk))
 
-    # Добавить комментарий
+    # Добавить комментарий к посту
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment':
 
@@ -1118,6 +1136,8 @@ def another_user_page(request, pk):
             new_notification.object_id = need_post
             new_notification.content_type = ContentType.objects.get_for_model(Posts)
             new_notification.save()
+
+            return redirect('another_user_page', pk)
 
     # Кнопка поставить / отменить лайк
 
@@ -1183,6 +1203,8 @@ def another_user_page(request, pk):
             new_notification.content_type = ContentType.objects.get_for_model(RePosts)
             new_notification.save()
 
+            return redirect('another_user_page', pk)
+
     # Добавить комментарий к репосту группы
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment_group_repost':
@@ -1205,6 +1227,8 @@ def another_user_page(request, pk):
             new_notification.object_id = request.POST['post_id']
             new_notification.content_type = ContentType.objects.get_for_model(GroupRePosts)
             new_notification.save()
+
+            return redirect('another_user_page', pk)
 
     # Кнопка удалить комментарий к репосту
 
@@ -1386,6 +1410,8 @@ def another_user_page_post(request, pk, pk_post):
             new_notification.content_type = ContentType.objects.get_for_model(Posts)
             new_notification.save()
 
+            return redirect('another_user_page_post', pk, pk_post)
+
     # Удалить комментарий
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'comment-delete':
@@ -1477,6 +1503,8 @@ def another_user_page_repost(request, pk, pk_repost):
             new_notification.content_type = ContentType.objects.get_for_model(RePosts)
             new_notification.save()
 
+            return redirect('another_user_page_repost', pk, pk_repost)
+
     # Удалить комментарий
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 're-comment-delete':
@@ -1558,6 +1586,8 @@ def another_user_page_group_repost(request, pk, pk_repost):
             new_notification.object_id = request.POST['post_id']
             new_notification.content_type = ContentType.objects.get_for_model(GroupRePosts)
             new_notification.save()
+
+            return redirect('another_user_page_group_repost', pk, pk_repost)
 
     # Удалить комментарий
 
@@ -1880,29 +1910,32 @@ def another_user_page_photo_show(request, pk, pk_photo):
     return render(request, 'account/another_user_photo_show.html', data)
 
 
-@login_required(login_url='/')
-def settings_page(request):
-
-    """Страничка настроек / выход"""
-
-    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
-
-    if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
-
-    user = f'{request.user.first_name} {request.user.last_name}'
-    profile = Profile.objects.get(profile_id=request.user.id)
-
-    not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
-    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
-
-    data = {
-        'not_read_message': not_read_message,
-        'title': 'Настройки',
-        'user': user,
-        'profile': profile,
-    }
-
-    return render(request, 'account/settings_page.html', data)
+# @login_required(login_url='/')
+# def settings_page(request):
+#
+#     """Страничка настроек / выход"""
+#
+#     if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+#
+#     if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
+#
+#     user = f'{request.user.first_name} {request.user.last_name}'
+#     profile = Profile.objects.get(profile_id=request.user.id)
+#
+#     profile.user_admin_switch = False
+#     profile.save()
+#
+#     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
+#     not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
+#
+#     data = {
+#         'not_read_message': not_read_message,
+#         'title': 'Настройки',
+#         'user': user,
+#         'profile': profile,
+#     }
+#
+#     return render(request, 'account/settings_page.html', data)
 
 
 
@@ -1923,6 +1956,8 @@ def settings_page_edit_profile(request):
             profile.profile_info = request.POST['comment']
             profile.save()
 
+            return redirect('settings_page_edit_profile')
+
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_info_name':
 
             if request.POST['first_name'] and request.POST['first_name'].isalnum():
@@ -1935,6 +1970,8 @@ def settings_page_edit_profile(request):
                 profile.first_name = request.POST['first_name']
                 profile.save()
 
+                return redirect('settings_page_edit_profile')
+
             if request.POST['last_name'] and request.POST['last_name'].isalnum():
 
                 user = request.user
@@ -1945,9 +1982,13 @@ def settings_page_edit_profile(request):
                 profile.last_name = request.POST['last_name']
                 profile.save()
 
+                return redirect('settings_page_edit_profile')
 
     user = f'{request.user.first_name} {request.user.last_name}'
     profile = Profile.objects.get(profile_id=request.user.id)
+
+    profile.user_admin_switch = False
+    profile.save()
 
     profile_info = profile.profile_info
 
@@ -2064,6 +2105,8 @@ def registration_page(request):
             #
             # send_registration_email(email, code)
 
+            send_registration_email.delay(email, code)
+
             return redirect('security_code')
 
         else:
@@ -2097,7 +2140,6 @@ def security_code(request):
 
         error = ''
         security_code_form = SecurityCode
-
 
         if request.method == 'POST' and request.POST['submit_button'] == 'security_code_form':
 

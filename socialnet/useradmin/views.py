@@ -19,6 +19,9 @@ from itertools import chain
 import random
 import re
 
+from socialnet.tasks import send_block_email, send_unblock_email
+
+
 
 @login_required(login_url='/')
 def settings_page(request):
@@ -29,6 +32,9 @@ def settings_page(request):
 
     user = f'{request.user.first_name} {request.user.last_name}'
     profile = Profile.objects.get(profile_id=request.user.id)
+
+    profile.user_admin_switch = True
+    profile.save()
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=1).filter(last_message__read=False)
     not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != 1])
@@ -422,6 +428,9 @@ def admin_another_user_page(request, pk):
             need_person.block = True
             need_person.save()
 
+            email = need_person.user.username
+            send_block_email.delay(email)
+
     # Кнопка разблокировать пользователя
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'unblock':
@@ -430,6 +439,8 @@ def admin_another_user_page(request, pk):
             need_person.block = False
             need_person.save()
 
+            email = need_person.user.username
+            send_unblock_email.delay(email)
 
     if request.user.id != pk:
 
@@ -1275,6 +1286,8 @@ def admin_dialog(request, dialog_id):
                         message.add_photo_in_post(photo)
                         message.save()
 
+            return redirect('admin_dialog', dialog_id)
+
         # Кнопка удалить сообщение
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'message-delete':
@@ -1400,3 +1413,94 @@ def admin_dialog(request, dialog_id):
     return render(request, 'useradmin/admin_single_dialog.html', data)
 
 
+def create_notification(request):
+
+    if request.method == 'POST':
+
+        # Кнопка создать оповещение
+
+        if 'submit_button' in request.POST and request.POST['submit_button'] == 'create_post':
+
+            if request.POST['content'] or request.FILES:
+
+                new_post = Posts()
+                new_post.author = Profile.objects.get(user=1)
+                new_post.content = request.POST['content']
+                new_post.save()
+
+                if 'photo_post' in request.FILES and request.FILES['photo_post']:
+
+                    for send_photo in request.FILES.getlist('photo_post'):
+                        photo = Photo()
+                        photo.author = Profile.objects.get(profile_id=1)
+                        photo.photo = send_photo
+                        photo.save()
+                        new_post.add_photo_in_post(photo)
+                        new_post.save()
+
+            return redirect('create_notification')
+
+        # Кнопка удалить пост
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'posts-delete':
+
+            post_id = request.POST['post_id']
+            post_delete = Posts.objects.get(id=post_id)
+            post_delete.delete()
+
+        # Кнопка поставить / отменить лайк посту
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like':
+
+            need_post = Posts.objects.get(id=request.POST['post_id'])
+            need_post.set_like_post(Profile.objects.get(profile_id=request.user.id))
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike':
+
+            need_post = Posts.objects.get(id=request.POST['post_id'])
+            need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
+
+        # Добавить комментарий к посту
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment':
+
+            need_post = request.POST['post_id']
+
+            new_comment = PostsComment()
+            new_comment.posts = Posts.objects.get(pk=need_post)
+            new_comment.author = Profile.objects.get(profile_id=1)
+            new_comment.comment = request.POST['comment']
+            new_comment.save()
+
+            return redirect('create_notification')
+
+        # Кнопка удалить комментарий
+
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'comment-delete':
+
+            comment_id = request.POST['comment_id']
+            comment_delete = PostsComment.objects.get(id=comment_id)
+            comment_delete.delete()
+
+    user = f'{request.user.first_name} {request.user.last_name}'
+    posts_form = PostsForm
+    comment_form = CommentPhotoForm
+    post_and_repost = Posts.objects.filter(author=1).order_by('-date')
+
+    for target_post in post_and_repost:
+
+        target_post.comments = reversed(PostsComment.objects.filter(posts=target_post).order_by('-date')[:3])
+
+    not_read_message = Dialog.objects.filter(user_list__profile_id=1).filter(last_message__read=False)
+    not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != 1])
+
+    data = {
+        'not_read_message': not_read_message,
+        'user': user,
+        'title': 'Оповещения',
+        'posts_form': posts_form,
+        'comment_form': comment_form,
+        'post_and_repost': post_and_repost,
+    }
+
+    return render(request, 'useradmin/create_notification.html', data)

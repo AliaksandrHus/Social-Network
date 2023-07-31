@@ -112,6 +112,8 @@ def search_result(request, text_search):
             new_notification.content_type = ContentType.objects.get_for_model(Posts)
             new_notification.save()
 
+            return redirect('search_result', text_search)
+
     # Добавить комментарий к посту группы
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_comment_group':
@@ -123,6 +125,8 @@ def search_result(request, text_search):
             new_comment.author = Profile.objects.get(profile_id=request.user.id)
             new_comment.comment = request.POST['comment']
             new_comment.save()
+
+            return redirect('search_result', text_search)
 
     # Кнопка поставить / отменить лайк
 
@@ -206,6 +210,8 @@ def search_result(request, text_search):
             new_notification.content_type = ContentType.objects.get_for_model(RePosts)
             new_notification.save()
 
+            return redirect('search_result', text_search)
+
     # Кнопка удалить комментарий к репосту
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 're-comment-delete':
@@ -237,6 +243,8 @@ def search_result(request, text_search):
             new_notification.content_type = ContentType.objects.get_for_model(GroupRePosts)
             new_notification.save()
 
+            return redirect('search_result', text_search)
+
     user = f'{request.user.first_name} {request.user.last_name}'
     i_following = Profile.objects.get(user=request.user.id).following.all()
     comment_form = CommentPhotoForm
@@ -250,6 +258,12 @@ def search_result(request, text_search):
 
         search_people += Profile.objects.filter(first_name__iregex=text_search)
         search_people += Profile.objects.filter(last_name__iregex=text_search)
+        search_people += Profile.objects.filter(profile_info__iregex=text_search)
+
+        if text_search.lower() in ['люди', 'профили', 'аккаунты', 'пользователи', 'человеки']:
+
+            search_people += Profile.objects.all()
+
         search_people = [person for person in set(search_people) if person.profile_id != request.user.id]
 
         search_people_count = len(search_people)
@@ -265,6 +279,12 @@ def search_result(request, text_search):
 
         search_people += Profile.objects.filter(first_name__iregex=text_search_list[0], last_name__iregex=text_search_list[1])
         search_people += Profile.objects.filter(first_name__iregex=text_search_list[1], last_name__iregex=text_search_list[0])
+        search_people += Profile.objects.filter(profile_info__iregex=text_search)
+
+        if text_search.lower() in ['все люди', 'профили пользователей', 'все аккаунты', 'все пользователи']:
+
+            search_people += Profile.objects.all()
+
         search_people = [person for person in set(search_people) if person.profile_id != request.user.id]
 
         search_people_count = len(search_people)
@@ -306,13 +326,18 @@ def search_result(request, text_search):
                 GroupRePostsComment.objects.filter(reposts=target_post).order_by('-date')[:3])
 
     group = []
-    group = Group.objects.filter(first_name__iregex=text_search)
+    group += Group.objects.filter(first_name__iregex=text_search)
+    group += Group.objects.filter(group_info__iregex=text_search)
+
+    if text_search.lower() in ['группы', 'группа', 'все группы', 'сообщества', 'все сообщества']:
+        group += Group.objects.all()
+
+    group = list(set(group))
 
     search_group_count = len(group)
     search_group_all = '' if search_group_count <= 5 else search_group_count - 5
 
     group = group[:5]
-
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
     not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
@@ -387,6 +412,12 @@ def search_result_people(request, text_search):
 
         search_people += Profile.objects.filter(first_name__iregex=text_search)
         search_people += Profile.objects.filter(last_name__iregex=text_search)
+        search_people += Profile.objects.filter(profile_info__iregex=text_search)
+
+        if text_search.lower() in ['люди', 'профили', 'аккаунты', 'пользователи', 'человеки']:
+
+            search_people += Profile.objects.all()
+
         search_people = [person for person in set(search_people) if person.profile_id != request.user.id]
 
     # Если запрос состоит из 2 слов
@@ -397,6 +428,12 @@ def search_result_people(request, text_search):
 
         search_people += Profile.objects.filter(first_name__iregex=text_search_list[0], last_name__iregex=text_search_list[1])
         search_people += Profile.objects.filter(first_name__iregex=text_search_list[1], last_name__iregex=text_search_list[0])
+        search_people += Profile.objects.filter(profile_info__iregex=text_search)
+
+        if text_search.lower() in ['все люди', 'профили пользователей', 'все аккаунты', 'все пользователи']:
+
+            search_people += Profile.objects.all()
+
         search_people = [person for person in set(search_people) if person.profile_id != request.user.id]
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
@@ -433,7 +470,14 @@ def search_result_group(request, text_search):
     comment_form = CommentPhotoForm
 
     group = []
-    group = Group.objects.filter(first_name__iregex=text_search)
+    group += Group.objects.filter(first_name__iregex=text_search)
+    group += Group.objects.filter(group_info__iregex=text_search)
+
+    if text_search.lower() in ['группы', 'группа', 'все группы', 'сообщества', 'все сообщества']:
+
+        group += Group.objects.all()
+
+    group = list(set(group))
 
     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
     not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])

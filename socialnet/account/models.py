@@ -19,6 +19,7 @@ class Profile(models.Model):
     age = models.IntegerField(default=0)
     user_status = models.TextField(blank=True)
     user_admin = models.BooleanField(default=False)
+    user_admin_switch = models.BooleanField(default=False)
     block = models.BooleanField(default=False)
     profile_info = models.TextField(max_length=500, blank=True)
 

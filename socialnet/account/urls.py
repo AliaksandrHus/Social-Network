@@ -35,7 +35,6 @@ urlpatterns = [
     path('user-<int:pk>/photo', views.another_user_page_photo, name='another_user_page_photo'),
     path('user-<int:pk>/photo/show-<int:pk_photo>', views.another_user_page_photo_show, name='another_user_page_photo_show'),
 
-    path('settings_page', views.settings_page, name='settings_page'),
     path('settings_page/edit_profile', views.settings_page_edit_profile, name='settings_page_edit_profile'),
 
     path('login_page', views.login_page, name='login_page'),

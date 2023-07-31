@@ -174,94 +174,100 @@
                     <div class="posts-all-container">
                             <a href="/user-{{ post.author.profile_id }}"><img src="{{ post.author.avatar.url }}"></a>
                         <div class="posts-comment-user-date">
-                            <a href="/user-{{ post.author.profile_id }}">{{ post.author }}</a>
+                            <a href="/user-{{ post.author.profile_id }}">
+                            {% if post.author.profile_id != 1 %}
+                                {{ post.author }}
+                            {% else %}
+                                Системное сообщение
+                            {% endif %}
+                            </a>
                             <span class="posts-comment-date">{{ post.date }}</span>
                         </div>
                     </div>
 
                     {% if post.photo_post.all|length == 1 %}
                         <div class="posts-all-1">
-                            <a href="/profile_page/photo/show-{{ post.photo_post.all.first.id }}">
+                            <a href="/user-{{ post.author.profile_id }}/photo/show-{{ post.photo_post.all.first.id }}">
                                 <img src="{{ post.photo_post.all.first.photo.url }}"></a>
                         </div>
                     {% elif post.photo_post.all|length == 2 %}
                         <div class="posts-all-2">
                             {% for photo in post.photo_post.all %}
-                            <a href="/profile_page/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
+                            <a href="/user-{{ post.author.profile_id }}/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
                             {% endfor %}
                         </div>
                     {% elif post.photo_post.all|length == 3 %}
                         <div class="posts-all-1">
-                            <a href="/profile_page/photo/show-{{ post.photo_post.all.first.id }}">
+                            <a href="/user-{{ post.author.profile_id }}/photo/show-{{ post.photo_post.all.first.id }}">
                                 <img src="{{ post.photo_post.all.first.photo.url }}"></a>
                         </div>
                         <div class="posts-all-2">
                             {% for photo in post.photo_post.all|slice:"1:" %}
-                            <a href="/profile_page/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
+                            <a href="/user-{{ post.author.profile_id }}/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
                             {% endfor %}
                         </div>
                     {% elif post.photo_post.all|length == 4 %}
                         <div class="posts-all-1">
-                            <a href="/profile_page/photo/show-{{ post.photo_post.all.first.id }}">
+                            <a href="/user-{{ post.author.profile_id }}/photo/show-{{ post.photo_post.all.first.id }}">
                                 <img src="{{ post.photo_post.all.first.photo.url }}"></a>
                         </div>
                         <div class="posts-all-3">
                             {% for photo in post.photo_post.all|slice:"1:" %}
-                            <a href="/profile_page/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
+                            <a href="/user-{{ post.author.profile_id }}/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
                             {% endfor %}
                         </div>
                     {% elif post.photo_post.all|length == 5 %}
                         <div class="posts-all-1">
-                            <a href="/profile_page/photo/show-{{ post.photo_post.all.first.id }}">
+                            <a href="/user-{{ post.author.profile_id }}/photo/show-{{ post.photo_post.all.first.id }}">
                                 <img src="{{ post.photo_post.all.first.photo.url }}"></a>
                         </div>
                         <div class="posts-all-4">
                             {% for photo in post.photo_post.all|slice:"1:" %}
-                            <a href="/profile_page/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
+                            <a href="/user-{{ post.author.profile_id }}/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
                             {% endfor %}
                         </div>
                     {% elif post.photo_post.all|length == 6 %}
                         <div class="posts-all-2">
                             {% for photo in post.photo_post.all|slice:":2" %}
-                            <a href="/profile_page/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
+                            <a href="/user-{{ post.author.profile_id }}/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
                             {% endfor %}
                         </div>
                         <div class="posts-all-4">
                             {% for photo in post.photo_post.all|slice:"2:" %}
-                            <a href="/profile_page/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
+                            <a href="/user-{{ post.author.profile_id }}/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
                             {% endfor %}
                         </div>
                     {% elif post.photo_post.all|length == 7 %}
                         <div class="posts-all-3">
                             {% for photo in post.photo_post.all|slice:":3" %}
-                            <a href="/profile_page/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
+                            <a href="/user-{{ post.author.profile_id }}/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
                             {% endfor %}
                         </div>
                         <div class="posts-all-4">
                             {% for photo in post.photo_post.all|slice:"3:" %}
-                            <a href="/profile_page/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
+                            <a href="/user-{{ post.author.profile_id }}/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
                             {% endfor %}
                         </div>
                     {% elif post.photo_post.all|length == 8 %}
                         <div class="posts-all-4">
                             {% for photo in post.photo_post.all|slice:":4" %}
-                            <a href="/profile_page/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
+                            <a href="/user-{{ post.author.profile_id }}/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
                             {% endfor %}
                         </div>
                         <div class="posts-all-4">
                             {% for photo in post.photo_post.all|slice:"4:" %}
-                            <a href="/profile_page/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
+                            <a href="/user-{{ post.author.profile_id }}/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
                             {% endfor %}
                         </div>
                     {% elif post.photo_post.all|length > 8 %}
                         <div class="posts-all-4">
                             {% for photo in post.photo_post.all|slice:":4" %}
-                            <a href="/profile_page/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
+                            <a href="/user-{{ post.author.profile_id }}/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
                             {% endfor %}
                         </div>
                         <div class="posts-all-4">
                             {% for photo in post.photo_post.all|slice:"4:8" %}
-                            <a href="/profile_page/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
+                            <a href="/user-{{ post.author.profile_id }}/photo/show-{{ photo.id }}"><img src="{{ photo.photo.url }}"></a>
                             {% endfor %}
                         </div>
                             <span class="posts-comment-date">+ еще {{ post.photo_post.all|slice:"8:"|length }} фото в посте</span>
@@ -341,7 +347,7 @@
 
                     </div>
 
-                    <br>
+            <div class="invisible-rectangle"></div>
 
             {% elif post.type_object == 'RePosts' %}
                 <div class="photo-all-comment">
@@ -380,7 +386,15 @@
                     <div class="posts-all-container">
                             <a href="/user-{{ post.post.author.profile_id }}"><img src="{{ post.post.author.avatar.url }}"></a>
                         <div class="posts-comment-user-date">
-                            <a href="/user-{{ post.post.author.profile_id }}">{{ post.post.author }}</a>
+                            <a href="/user-{{ post.post.author.profile_id }}">
+
+                                {% if post.post.author.profile_id != 1 %}
+                                    {{ post.post.author }}
+                                {% else %}
+                                    Системное сообщение
+                                {% endif %}
+
+                                </a>
                             <span class="posts-comment-date">{{ post.post.date }}</span>
                         </div>
                     </div>
@@ -558,7 +572,7 @@
 
                     </div>
 
-                    <br>
+            <div class="invisible-rectangle"></div>
 
             {% elif post.type_object == 'GroupRePosts' %}
 
@@ -778,7 +792,7 @@
 
                     </div>
 
-                    <br>
+            <div class="invisible-rectangle"></div>
 
 
 
@@ -987,7 +1001,7 @@
 
                     </div>
 
-                    <br>
+            <div class="invisible-rectangle"></div>
 
                 {% endif %}
 
@@ -1188,7 +1202,7 @@
 
                     </div>
 
-                    <br>
+            <div class="invisible-rectangle"></div>
 
             {% elif post.type_object == 'RePosts' %}
 
@@ -1406,7 +1420,7 @@
 
                     </div>
 
-                    <br>
+            <div class="invisible-rectangle"></div>
 
             {% elif post.type_object == 'GroupRePosts' %}
 
@@ -1626,7 +1640,7 @@
 
                     </div>
 
-                    <br>
+            <div class="invisible-rectangle"></div>
 
 
 
@@ -1835,7 +1849,7 @@
 
                     </div>
 
-                    <br>
+            <div class="invisible-rectangle"></div>
 
                 {% endif %}
 
