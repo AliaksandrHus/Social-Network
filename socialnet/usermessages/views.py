@@ -2,14 +2,14 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404
 
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.decorators import login_required
 
-from account.models import Profile, Posts, Notification
-from account.forms import PostsForm, CommentPhotoForm
 from .models import Dialog, Messages, MessagePhoto
+from account.models import Profile, Posts, Notification
 from groups.models import GroupPosts
 
-from django.contrib.contenttypes.models import ContentType
+from account.forms import PostsForm, CommentPhotoForm
 
 from django.http import JsonResponse
 
@@ -65,7 +65,6 @@ def all_messages(request):
         return render(request, 'usermessages/all_dialogs_admin.html', data)
 
 
-
 @login_required(login_url='/')
 def dialog(request, dialog_id):
 
@@ -96,7 +95,7 @@ def dialog(request, dialog_id):
 
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'create_message':
 
-            # Если в запросе текст или фото
+        # Если в запросе текст или фото
 
             if request.POST['content'] or request.FILES:
 
@@ -107,12 +106,6 @@ def dialog(request, dialog_id):
                 message.save()
 
                 dialog = get_object_or_404(Dialog, id=dialog_id)
-
-                # if message.content == '' and request.FILES: dialog.last_message_text = 'Фото'
-                # else: dialog.last_message_text = str(request.POST['content'])[:50]
-                #
-                # if len(dialog.last_message_text) == 50: dialog.last_message_text += '...'
-
                 dialog.last_message_time = message.date
                 dialog.last_message = message
                 dialog.save()
@@ -132,7 +125,7 @@ def dialog(request, dialog_id):
 
             return redirect('dialog', dialog_id)
 
-        # Кнопка удалить сообщение
+    # Кнопка удалить сообщение
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'message-delete':
 
@@ -167,7 +160,7 @@ def dialog(request, dialog_id):
                     dialog.delete()
                     return redirect('all_messages')
 
-        # Пост - Кнопка поставить / отменить лайк
+    # Пост - Кнопка поставить / отменить лайк
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like_post':
 
@@ -190,7 +183,7 @@ def dialog(request, dialog_id):
             need_post = Posts.objects.get(id=request.POST['post_id'])
             need_post.set_unlike_post(Profile.objects.get(profile_id=user_or_admin))
 
-        # Репост - Кнопка поставить / отменить лайк
+    # Репост - Кнопка поставить / отменить лайк
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like_repost':
 
@@ -202,7 +195,7 @@ def dialog(request, dialog_id):
             need_post = Posts.objects.get(id=request.POST['post_id'])
             need_post.set_unlike_post(Profile.objects.get(profile_id=user_or_admin))
 
-        # Репост группы - Кнопка поставить / отменить лайк
+    # Репост группы - Кнопка поставить / отменить лайк
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like_group_post':
 
@@ -214,7 +207,7 @@ def dialog(request, dialog_id):
             need_post = GroupPosts.objects.get(id=request.POST['post_id'])
             need_post.set_unlike_post(Profile.objects.get(profile_id=user_or_admin))
 
-        # Репост группы - Кнопка поставить / отменить лайк
+    # Репост группы - Кнопка поставить / отменить лайк
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_like_group_repost':
 
@@ -232,7 +225,7 @@ def dialog(request, dialog_id):
             need_dialog.delete()
             return redirect('all_messages')
 
-        # Обновить страницу при прокрутке вверх
+    # Обновить страницу при прокрутке вверх
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'add_message_list':
 
@@ -283,7 +276,6 @@ def dialog(request, dialog_id):
     else:
 
         return render(request, 'useradmin/admin_single_dialog.html', data)
-
 
 
 @login_required

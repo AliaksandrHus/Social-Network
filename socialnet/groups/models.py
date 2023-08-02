@@ -3,6 +3,7 @@ from django.db import models
 
 from account.models import Profile
 
+
 class Group(models.Model):
 
     """Модель группы"""
@@ -128,7 +129,6 @@ class GroupPosts(models.Model):
     photo_post = models.ManyToManyField(GroupPhoto, related_name='group_photo_post', blank=True)
     type_object = 'GroupPosts'
 
-
     # методы
 
     def __str__(self):
@@ -154,7 +154,7 @@ class GroupPosts(models.Model):
 
 class GroupPostsComment(models.Model):
 
-    """Модель комментариев к постов группы"""
+    """Модель комментариев к постам группы"""
 
     posts = models.ForeignKey(GroupPosts, on_delete=models.CASCADE)
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)

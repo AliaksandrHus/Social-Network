@@ -1,12 +1,7 @@
-from django.contrib.auth.models import User
-from django.db.models.signals import post_save
 from django.db import models
-from django.dispatch import receiver
 
-from account.models import Profile, Posts, Photo, PhotoComment, PostsComment, RePosts, RePostsComment
-
-from groups.models import Group, GroupPosts, GroupRePosts, GroupPostsComment, GroupRePostsComment, GroupPostsCommentAuthor
-from groups.models import GroupPhoto, GroupPhotoCommentAuthor, GroupPhotoComment
+from account.models import Profile, Posts, Photo, RePosts
+from groups.models import GroupPosts, GroupRePosts
 
 
 class Dialog(models.Model):

@@ -5,12 +5,16 @@
 
 {% block content %}
 
+    <div class="logo-large">
+        <p>switter</p>
+    </div>
+
     <div class="standard">
 
-        <h3>Социальная сеть</h3>
+        <h3>Это вам не Twitter!</h3>
         <h3>В нашей сети {{ count_profile }} зарегистрированных пользователей!</h3>
         <h3>Которые поделились {{ count_posts }} записями!</h3>
-        <p>Присоединяйтесь - мы будем рады)</p>
+        <p>Присоединяйтесь - мы будем рады!</p>
 
         <form action="{% url 'login_page' %}">
             {% csrf_token %}
@@ -22,6 +26,10 @@
         <button value="rand" >Регистрация</button>
         </form>
 
+    </div>
+
+    <div class="standard">
+        <p>*у нас даже асинхрон есть</p>
     </div>
 
 {% endblock %}

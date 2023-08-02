@@ -1,29 +1,27 @@
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
 
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 
-from .models import Profile, Posts, Photo, PhotoComment, PostsComment, RePosts, RePostsComment, Notification
-
-from groups.models import GroupPosts, GroupRePosts, GroupRePostsComment
 from .forms import LoginForm, RegistrationForm, PostsForm, DescriptionPhotoForm, CommentPhotoForm, StatusForm, SecurityCode
+
+from .models import Profile, Posts, Photo, PhotoComment, PostsComment, RePosts, RePostsComment, Notification
+from groups.models import GroupPosts, GroupRePosts, GroupRePostsComment
 from usermessages.models import Dialog, Messages
 
 from itertools import chain
 import random
 import re
 
-from django.contrib.contenttypes.models import ContentType
-
 from socialnet.tasks import send_registration_email
 
-from django.core.mail import send_mail
 
 code = ''
+
 
 def index(request):
 
@@ -588,12 +586,12 @@ def profile_page_post_repost(request, pk_post):
             need_post = Posts.objects.get(id=request.POST['post_id'])
             need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
 
-        # Кнопка найти
+    # Кнопка найти
 
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'start_search':
             text_search = request.POST['comment']
 
-        # Отправить пост в личку пользователю
+    # Отправить пост в личку пользователю
 
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'post_send_button':
 
@@ -664,7 +662,6 @@ def profile_page_post_repost(request, pk_post):
         search_people += Profile.objects.filter(first_name__iregex=text_search_list[1], last_name__iregex=text_search_list[0])
         search_people = [person for person in set(search_people) if person.profile_id != request.user.id]
 
-
     user = f'{request.user.first_name} {request.user.last_name}'
     comment_form = CommentPhotoForm
 
@@ -688,7 +685,7 @@ def profile_page_post_repost(request, pk_post):
 @login_required(login_url='/')
 def profile_page_post_group_repost(request, pk_group_post):
 
-    """Страница создания репоста"""
+    """Страница создания репоста группы"""
 
     if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
@@ -721,12 +718,12 @@ def profile_page_post_group_repost(request, pk_group_post):
             need_post = GroupPosts.objects.get(id=request.POST['post_id'])
             need_post.set_unlike_post(Profile.objects.get(profile_id=request.user.id))
 
-        # Кнопка найти
+    # Кнопка найти
 
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'start_search':
             text_search = request.POST['comment']
 
-        # Отправить пост в личку пользователю
+    # Отправить пост в личку пользователю
 
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'post_send_button':
 
@@ -824,7 +821,8 @@ def profile_page_followers(request):
 
     if request.method == 'POST':
 
-        # кнопка подписаться
+    # Кнопка подписаться
+
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'follow':
 
             pk = request.POST['user_id']
@@ -840,7 +838,8 @@ def profile_page_followers(request):
             new_notification.content_type = ContentType.objects.get_for_model(Profile)
             new_notification.save()
 
-        # кнопка отменить подписку
+    # кнопка отменить подписку
+
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'unfollow':
 
             pk = request.POST['user_id']
@@ -880,7 +879,8 @@ def profile_page_following(request):
 
     if request.method == 'POST':
 
-        # кнопка отменить подписку
+    # Кнопка отменить подписку
+
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'unfollow':
 
             pk = request.POST['user_id']
@@ -978,7 +978,8 @@ def profile_page_photo_show(request, pk_photo):
 
     if request.method == 'POST':
 
-        # правая часть фото - следующее фото
+    # Правая часть фото - следующее фото
+
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'forward':
 
             if photo_all[len_photo_all - 1].id != photo_single.id:
@@ -988,7 +989,8 @@ def profile_page_photo_show(request, pk_photo):
 
             else: return redirect('profile_page_photo_show', pk_photo=photo_all[0].id)
 
-        # левая часть фото - предыдущее фото
+    # Левая часть фото - предыдущее фото
+
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'back':
 
             if photo_all[0].id != photo_single.id:
@@ -1289,7 +1291,7 @@ def another_user_page(request, pk):
 
         post_and_repost = sorted(chain(posts, reposts, reposts_group), key=lambda x: x.date, reverse=True)
 
-        # Добавить комментарии к постам на странице профиля
+    # Добавить комментарии к постам на странице профиля
 
         for target_post in post_and_repost:
 
@@ -1546,7 +1548,7 @@ def another_user_page_repost(request, pk, pk_repost):
 @login_required(login_url='/')
 def another_user_page_group_repost(request, pk, pk_repost):
 
-    """Просмотр своего репоста"""
+    """Просмотр репоста группы другого пользователя"""
 
     if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
@@ -1817,6 +1819,7 @@ def another_user_page_photo_show(request, pk, pk_photo):
     if request.method == 'POST':
 
         # правая часть фото - следующее фото
+
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'forward':
 
             if photo_all[len_photo_all - 1].id != photo_single.id:
@@ -1828,6 +1831,7 @@ def another_user_page_photo_show(request, pk, pk_photo):
                 return redirect('another_user_page_photo_show', pk=pk, pk_photo=photo_all[0].id)
 
         # левая часть фото - предыдущее фото
+
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'back':
 
             if photo_all[0].id != photo_single.id:
@@ -1854,11 +1858,9 @@ def another_user_page_photo_show(request, pk, pk_photo):
 
             return redirect('another_user_page_photo_show', pk, pk_photo)
 
-
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'set_unlike':
             photo_single.set_unlike(Profile.objects.get(profile_id=request.user.id))
             return redirect('another_user_page_photo_show', pk, pk_photo)
-
 
     # Добавить комментарий
 
@@ -1909,36 +1911,6 @@ def another_user_page_photo_show(request, pk, pk_photo):
 
     return render(request, 'account/another_user_photo_show.html', data)
 
-
-# @login_required(login_url='/')
-# def settings_page(request):
-#
-#     """Страничка настроек / выход"""
-#
-#     if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
-#
-#     if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
-#
-#     user = f'{request.user.first_name} {request.user.last_name}'
-#     profile = Profile.objects.get(profile_id=request.user.id)
-#
-#     profile.user_admin_switch = False
-#     profile.save()
-#
-#     not_read_message = Dialog.objects.filter(user_list__profile_id=request.user.id).filter(last_message__read=False)
-#     not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != request.user.id])
-#
-#     data = {
-#         'not_read_message': not_read_message,
-#         'title': 'Настройки',
-#         'user': user,
-#         'profile': profile,
-#     }
-#
-#     return render(request, 'account/settings_page.html', data)
-
-
-
 @login_required(login_url='/')
 def settings_page_edit_profile(request):
 
@@ -1957,6 +1929,8 @@ def settings_page_edit_profile(request):
             profile.save()
 
             return redirect('settings_page_edit_profile')
+
+    # Кнопка изменить имя и фамилию
 
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'create_info_name':
 
@@ -2093,19 +2067,7 @@ def registration_page(request):
 
             global code
             code = random.randint(1000, 9999)
-
-            # def send_registration_email(user_email, code):
-            #
-            #     subject = 'Код подтверждения регистрации'
-            #     message = f'Добро пожаловать на наш сайт!\nВаш код подтdерждения: {code}'
-            #     from_email = 'artsonik365@gmail.com'
-            #     recipient_list = [user_email]
-            #
-            #     send_mail(subject, message, from_email, recipient_list)
-            #
-            # send_registration_email(email, code)
-
-            send_registration_email.delay(email, code)
+            send_registration_email.delay(email, code) # Отправка сообщения через celery
 
             return redirect('security_code')
 
@@ -2136,14 +2098,14 @@ def registration_page(request):
 
 def security_code(request):
 
+    """Страница подтверждения регистрации"""
+
     if code:
 
         error = ''
         security_code_form = SecurityCode
 
         if request.method == 'POST' and request.POST['submit_button'] == 'security_code_form':
-
-            print(request.POST)
 
             if request.POST['code'] == str(code) or request.POST['code'] == '9999':
 
@@ -2198,8 +2160,6 @@ def profile_page_report_group_post(request, pk_post):
     # Отправить рапорт
 
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'send_report':
-
-            print(request.POST)
 
             active_user = Profile.objects.get(profile_id=request.user.id)
             target_user = Profile.objects.get(profile_id=1)
