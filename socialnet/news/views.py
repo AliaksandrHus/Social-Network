@@ -1,19 +1,16 @@
 from django.shortcuts import render
 from django.shortcuts import redirect
 
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.decorators import login_required
 
+from groups.models import GroupPosts, GroupRePosts, GroupPostsComment, GroupPostsCommentAuthor, GroupRePostsComment
+from account.models import Profile, Posts, PostsComment, RePosts, RePostsComment, Notification
 from usermessages.models import Dialog
 
-from groups.models import GroupPosts, GroupRePosts, GroupPostsComment, GroupPostsCommentAuthor, GroupRePostsComment
-
-from account.models import Profile, Posts, PostsComment, RePosts, RePostsComment, Notification
 from account.forms import CommentPhotoForm
 
 from itertools import chain
-from django.contrib.contenttypes.models import ContentType
-
-import random
 
 
 @login_required(login_url='/')

@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'search',
     'usermessages',
     'useradmin',
+    'rest_framework',
+    'api',
 ]
 
 MIDDLEWARE = [

@@ -2,21 +2,19 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404
 
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-
-from usermessages.models import Dialog
-
-from account.models import Profile, Notification
-from account.forms import PostsForm, DescriptionPhotoForm, CommentPhotoForm
 
 from .models import Group, GroupPhoto, GroupPosts, GroupPostsComment, GroupRePostsComment, GroupRePosts
 from .models import GroupPostsCommentAuthor, GroupPhotoComment, GroupPhotoCommentAuthor
 
+from account.models import Profile, Notification
+from account.forms import PostsForm, DescriptionPhotoForm, CommentPhotoForm
+from usermessages.models import Dialog
+
 from itertools import chain
 import random
-
-from django.contrib.contenttypes.models import ContentType
 
 
 @login_required(login_url='/')
@@ -318,11 +316,10 @@ def group_view(request, group_id):
     return render(request, 'groups/group_page.html', data)
 
 
-
 @login_required(login_url='/')
 def group_followers(request, group_id):
 
-    """Страница подписчиков других профилей"""
+    """Страница подписчиков группы"""
 
     if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
@@ -394,7 +391,8 @@ def group_team(request, group_id):
 
     if request.method == 'POST':
 
-        # кнопка подписаться
+    # Кнопка подписаться
+
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'follow':
 
 
@@ -411,7 +409,8 @@ def group_team(request, group_id):
             new_notification.content_type = ContentType.objects.get_for_model(Profile)
             new_notification.save()
 
-        # кнопка отменить подписку
+    # Кнопка отменить подписку
+
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'unfollow':
 
             user_pk = request.POST['user_id']
@@ -442,15 +441,16 @@ def group_team(request, group_id):
                                                         last_name__iregex=text_search_list[0])
                 search_people = [person for person in set(search_people) if person.profile_id != request.user.id]
 
-        # кнопка подписаться
-        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'add':
+    # Кнопка подписаться
 
+        elif 'submit_button' in request.POST and request.POST['submit_button'] == 'add':
 
             user_pk = request.POST['user_id']
             group = get_object_or_404(Group, profile_id=group_id)
             group.team.add(User.objects.get(pk=user_pk))
 
-        # кнопка отменить подписку
+    # Кнопка отменить подписку
+
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'remove':
 
             user_pk = request.POST['user_id']
@@ -531,7 +531,7 @@ def groups_photo(request, group_id):
 @login_required(login_url='/')
 def groups_photo_show(request, group_id, pk_photo):
 
-    """Страница просмотра фото активного пользователя"""
+    """Страница просмотра фото группы"""
 
     if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
@@ -568,7 +568,8 @@ def groups_photo_show(request, group_id, pk_photo):
 
     if request.method == 'POST':
 
-        # правая часть фото - следующее фото
+    # правая часть фото - следующее фото
+
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'forward':
 
             if photo_all[len_photo_all - 1].id != photo_single.id:
@@ -578,7 +579,8 @@ def groups_photo_show(request, group_id, pk_photo):
 
             else: return redirect('groups_photo_show', group_id=group_id, pk_photo=photo_all[0].id)
 
-        # левая часть фото - предыдущее фото
+    # левая часть фото - предыдущее фото
+
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'back':
 
             if photo_all[0].id != photo_single.id:
@@ -778,7 +780,6 @@ def groups_post(request, group_id, pk_post):
     group = get_object_or_404(Group, profile_id=group_id)
     comment_form = CommentPhotoForm
     post = get_object_or_404(GroupPosts, id=pk_post)
-
 
     comments_user = GroupPostsComment.objects.filter(posts=post)
     comments_author = GroupPostsCommentAuthor.objects.filter(posts=post)

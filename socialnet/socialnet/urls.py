@@ -9,6 +9,7 @@ urlpatterns = [
     path('groups/', include('groups.urls')),
     path('messages/', include('usermessages.urls')),
     path('useradmin/', include('useradmin.urls')),
+    path('api/', include('api.urls')),
 
 ]
 

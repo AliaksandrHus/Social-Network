@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
+from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.db import models
-from django.dispatch import receiver
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -127,7 +127,6 @@ class Posts(models.Model):
     like_post = models.ManyToManyField(User, related_name='like_post', blank=True)
     photo_post = models.ManyToManyField(Photo, related_name='photo_post', blank=True)
     type_object = 'Posts'
-
 
     # методы
 

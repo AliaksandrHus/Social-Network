@@ -2,17 +2,15 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 
 from django.contrib.auth.decorators import login_required
-
-from usermessages.models import Dialog
+from django.contrib.contenttypes.models import ContentType
 
 from groups.models import Group, GroupPosts, GroupRePosts, GroupPostsComment, GroupRePostsComment, GroupPostsCommentAuthor
-
 from account.models import Profile, Posts, PostsComment, RePosts, RePostsComment, Notification
+from usermessages.models import Dialog
+
 from account.forms import CommentPhotoForm
 
 from itertools import chain
-
-from django.contrib.contenttypes.models import ContentType
 
 
 @login_required(login_url='/')
@@ -45,7 +43,6 @@ def search(request):
     }
 
     return render(request, 'search/search.html', data)
-
 
 
 @login_required(login_url='/')

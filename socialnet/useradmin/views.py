@@ -1,26 +1,20 @@
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
 
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
 
 from account.models import Profile, Posts, Photo, PhotoComment, PostsComment, RePosts, RePostsComment
-
 from groups.models import Group, GroupPosts, GroupRePosts, GroupPostsComment, GroupRePostsComment, GroupPostsCommentAuthor
 from groups.models import GroupPhoto, GroupPhotoCommentAuthor, GroupPhotoComment
-
-from account.forms import LoginForm, RegistrationForm, PostsForm, DescriptionPhotoForm, CommentPhotoForm
 from usermessages.models import Dialog, Messages, MessagePhoto
+
+from account.forms import PostsForm, CommentPhotoForm
 
 from itertools import chain
 import random
-import re
 
 from socialnet.tasks import send_block_email, send_unblock_email
-
 
 
 @login_required(login_url='/')
@@ -651,7 +645,8 @@ def admin_another_user_page_photo_show(request, pk, pk_photo):
 
     if request.method == 'POST':
 
-        # правая часть фото - следующее фото
+    # Правая часть фото - следующее фото
+
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'forward':
 
             if photo_all[len_photo_all - 1].id != photo_single.id:
@@ -662,7 +657,8 @@ def admin_another_user_page_photo_show(request, pk, pk_photo):
             else:
                 return redirect('admin_another_user_page_photo_show', pk=pk, pk_photo=photo_all[0].id)
 
-        # левая часть фото - предыдущее фото
+    # Левая часть фото - предыдущее фото
+
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'back':
 
             if photo_all[0].id != photo_single.id:
@@ -818,7 +814,7 @@ def admin_another_user_page_repost(request, pk, pk_repost):
 @login_required(login_url='/')
 def admin_another_user_page_group_repost(request, pk, pk_repost):
 
-    """Просмотр своего репоста"""
+    """Просмотр репоста группы другого пользователя"""
 
     if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
@@ -864,6 +860,8 @@ def admin_another_user_page_group_repost(request, pk, pk_repost):
 
 @login_required(login_url='/')
 def admin_group_view(request, group_id):
+
+    """Просмотр группы"""
 
     if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
@@ -978,7 +976,7 @@ def admin_group_view(request, group_id):
 @login_required(login_url='/')
 def admin_group_followers(request, group_id):
 
-    """Страница подписчиков других профилей"""
+    """Страница подписчиков группы"""
 
     if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
@@ -1009,6 +1007,8 @@ def admin_group_followers(request, group_id):
 
 @login_required(login_url='/')
 def admin_groups_post(request, group_id, pk_post):
+
+    """Просмотр поста группы"""
 
     if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
@@ -1049,8 +1049,6 @@ def admin_groups_post(request, group_id, pk_post):
     comments_author = GroupPostsCommentAuthor.objects.filter(posts=post)
     all_comment = list(sorted(chain(comments_user, comments_author), key=lambda x: x.date))
 
-    print(comments_user)
-
     not_read_message = Dialog.objects.filter(user_list__profile_id=1).filter(last_message__read=False)
     not_read_message = sum([1 for x in not_read_message if x.last_message.author.profile_id != 1])
 
@@ -1069,6 +1067,8 @@ def admin_groups_post(request, group_id, pk_post):
 
 @login_required(login_url='/')
 def admin_groups_photo(request, group_id):
+
+    """Просмотр всех фото группы"""
 
     if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
@@ -1095,7 +1095,7 @@ def admin_groups_photo(request, group_id):
 @login_required(login_url='/')
 def admin_groups_photo_show(request, group_id, pk_photo):
 
-    """Страница просмотра фото активного пользователя"""
+    """Страница просмотра фото группы"""
 
     if Profile.objects.get(user=request.user.id).block: return redirect('block_page')
 
@@ -1126,7 +1126,8 @@ def admin_groups_photo_show(request, group_id, pk_photo):
 
     if request.method == 'POST':
 
-        # правая часть фото - следующее фото
+    # Правая часть фото - следующее фото
+
         if 'submit_button' in request.POST and request.POST['submit_button'] == 'forward':
 
             if photo_all[len_photo_all - 1].id != photo_single.id:
@@ -1136,7 +1137,8 @@ def admin_groups_photo_show(request, group_id, pk_photo):
 
             else: return redirect('admin_groups_photo_show', group_id=group_id, pk_photo=photo_all[0].id)
 
-        # левая часть фото - предыдущее фото
+    # Левая часть фото - предыдущее фото
+
         elif 'submit_button' in request.POST and request.POST['submit_button'] == 'back':
 
             if photo_all[0].id != photo_single.id:
